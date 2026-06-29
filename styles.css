@@ -370,12 +370,36 @@ body.fixed-action-page .page-shell {
   display: block;
 }
 @media (max-width: 980px) {
+  .dashboard-grid,
   .admin-grid {
     grid-template-columns: 1fr;
   }
-  .admin-panel {
+  .admin-panel,
+  .dev-dashboard .admin-panel {
     position: static;
     top: auto;
+    width: 100%;
+    max-width: 100%;
+  }
+  .panel-card,
+  .student-card,
+  .account-directory,
+  .table-wrapper {
+    width: 100%;
+  }
+  .grade-form .form-grid {
+    grid-template-columns: 1fr;
+  }
+  .student-meta {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .student-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .table-wrapper table {
+    min-width: auto;
   }
 }
 .dev-dashboard .admin-panel {
@@ -722,6 +746,42 @@ tbody tr:hover {
 }
 
 @media (max-width: 520px) {
+  .admin-grid,
+  .dashboard-grid,
+  .stats-grid,
+  .overview-grid,
+  .grade-form .form-grid,
+  .student-meta,
+  .student-actions {
+    grid-template-columns: 1fr;
+  }
+  .student-meta,
+  .student-actions {
+    flex-direction: column;
+  }
+  .table-wrapper table {
+    min-width: auto;
+  }
+  .table-wrapper {
+    overflow-x: auto;
+  }
+  .page-header,
+  .panel-card,
+  .student-card,
+  .account-entry,
+  .form-card,
+  .dashboard-wrapper,
+  .modal-card {
+    padding: 18px;
+  }
+  .page-actions {
+    gap: 10px;
+  }
+  .button-logout,
+  .button-enroll {
+    width: 100%;
+  }
+}
   .page-shell {
     padding: 18px 14px 28px;
   }
