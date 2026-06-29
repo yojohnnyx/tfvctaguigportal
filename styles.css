@@ -376,8 +376,8 @@ body.fixed-action-page .page-shell {
   }
   .admin-panel,
   .dev-dashboard .admin-panel {
-    position: static;
-    top: auto;
+    position: static !important;
+    top: auto !important;
     width: 100%;
     max-width: 100%;
   }
@@ -400,6 +400,18 @@ body.fixed-action-page .page-shell {
   }
   .table-wrapper table {
     min-width: auto;
+  }
+  .dev-left-header {
+    grid-template-columns: 1fr;
+  }
+  .dev-left-header .page-actions {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+  .dev-left-header .page-actions button,
+  .dev-left-header .page-actions .button-logout {
+    width: 100%;
   }
 }
 .dev-dashboard .admin-panel {
@@ -821,4 +833,4 @@ tbody tr:hover {
   .fixed-action-page .page-shell {
     padding-bottom: 80px;
   }
-}
+
