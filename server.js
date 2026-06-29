@@ -338,6 +338,7 @@ app.post('/dev/api/create-account', requireDev, (req, res) => {
   }
   if (!isValidPassword(password)) {
     return res.status(400).json({ error: 'Password must be at least 6 characters.' });
+  }
   if (password !== confirmPassword) {
     return res.status(400).json({ error: 'Passwords do not match.' });
   }
