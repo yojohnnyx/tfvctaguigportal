@@ -173,18 +173,41 @@ body.fixed-action-page .tip-button {
 body.fixed-action-page .page-shell {
   padding-bottom: 100px;
 }
-@media (max-width: 640px) {
+@media (max-width: 760px) {
+  .page-shell {
+    padding: 24px 18px 36px;
+  }
+  .page-header,
+  .form-card,
+  .dashboard-wrapper,
+  .modal-card {
+    padding: 22px;
+  }
+  .page-actions {
+    justify-content: center;
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .page-actions button,
+  .page-actions .button-logout,
+  .page-actions .button-enroll,
+  .page-actions .theme-toggle-button,
+  .page-actions .tip-button {
+    width: 100%;
+  }
   body.fixed-action-page .theme-toggle-button,
   body.fixed-action-page .tip-button {
+    position: static;
+    bottom: auto;
+    right: auto;
+    left: auto;
+    width: 100%;
+    margin: 0 0 12px;
+  }
+  body.login-page .theme-toggle-button,
+  body.login-page .tip-button {
     padding: 10px 14px;
     font-size: 0.95rem;
-    bottom: 16px;
-  }
-  body.login-page .theme-toggle-button {
-    right: 16px;
-  }
-  body.login-page .tip-button {
-    left: 16px;
   }
 }
 .button-logout,
