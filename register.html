@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Portal Grading System - Register</title>
+  <base href="http://127.0.0.1:3000/">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="fixed-action-page">
+  <div class="page-shell">
+    <div class="page-header">
+      <div>
+        <div class="brand">Grading Portal</div>
+        <p class="subtitle">Register a new student account to save your portal data in SQLite and access it after refresh.</p>
+      </div>
+      <div class="page-actions">
+        <button type="button" class="theme-toggle-button" onclick="toggleTheme()">Switch to dark</button>
+        <button type="button" class="tip-button" onclick="openModal('suggestModal')">Need a tip?</button>
+      </div>
+    </div>
+
+    <div class="form-panel">
+      <div class="form-card">
+        <p class="helper">Enter your details below to create a persistent grading profile with secure SQLite storage.</p>
+        <div id="pageErrorMessage" class="status-message"></div>
+        <form id="registerForm" action="/register" method="post">
+          <div class="field-block">
+            <label for="name">Full name</label>
+            <input type="text" id="name" name="name" placeholder="Jane Doe" required />
+          </div>
+          <div class="field-block">
+            <label for="email">Email address</label>
+            <input type="email" id="email" name="email" placeholder="you@example.com" required />
+          </div>
+          <div class="field-block">
+            <label for="major">Major</label>
+            <select id="major" name="major" required>
+              <option value="">Select major</option>
+              <option value="CBAA">CBAA</option>
+              <option value="CS">CS</option>
+              <option value="IT">IT</option>
+              <option value="BSBA">BSBA</option>
+              <option value="EDUC">EDUC</option>
+              <option value="HRM">HRM</option>
+            </select>
+          </div>
+          <div class="field-block admin-only" style="display:none;">
+            <label for="studentId">Student ID</label>
+            <input type="text" id="studentId" name="studentId" placeholder="Enter student ID" />
+          </div>
+          <input type="hidden" id="fromField" name="from" value="" />
+          <div class="field-block">
+            <label for="year">Year level</label>
+            <select id="year" name="year" required>
+              <option value="">Select year</option>
+              <option value="1st Year">1st Year</option>
+              <option value="2nd Year">2nd Year</option>
+              <option value="3rd Year">3rd Year</option>
+              <option value="4th Year">4th Year</option>
+            </select>
+          </div>
+          <div class="field-block">
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" placeholder="Create a password" required />
+          </div>
+          <div class="field-block">
+            <label for="confirmPassword">Confirm password</label>
+            <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Repeat password" required />
+          </div>
+          <button type="submit" class="button-primary">Register</button>
+        </form>
+        <div class="link-row">
+          Already have an account? <a href="login.html">Log in</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="suggestModal" class="modal-backdrop" data-modal="suggestModal">
+    <div class="modal-card">
+      <h2>Quick Tip</h2>
+      <p>Choose a strong password and use this portal weekly to track grades and course progress. Your data remains available after refresh.</p>
+      <div class="modal-actions">
+        <button type="button" class="button-secondary" onclick="closeModal('suggestModal')">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="scripts.js"></script>
+  <script>
+    (function() {
+      const params = new URLSearchParams(window.location.search);
+      const from = params.get('from');
+      const fromField = document.getElementById('fromField');
+      const studentField = document.querySelector('.admin-only');
+      const studentInput = document.getElementById('studentId');
+
+      if (from && from === 'admin') {
+        if (fromField) {
+          fromField.value = 'admin';
+        }
+        if (studentField) {
+          studentField.style.display = 'block';
+        }
+        if (studentInput) {
+          studentInput.required = true;
+        }
+      }
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Portal Admin Login</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="page-shell">
+    <div class="page-header">
+      <div>
+        <div class="brand">Admin Login</div>
+        <p class="subtitle">Sign in as admin to manage students and grades for the portal.</p>
+      </div>
+      <div class="page-actions">
+        <button type="button" class="theme-toggle-button" onclick="toggleTheme()">Switch to dark</button>
+        <button type="button" class="tip-button" onclick="openModal('suggestModal')">Need a tip?</button>
+      </div>
+    </div>
+
+    <div class="form-panel">
+      <div class="form-card">
+        <p class="helper">Use the admin credentials to view students by major and year, and assign grades.</p>
+        <div id="pageErrorMessage" class="status-message"></div>
+        <form action="/admin/login" method="post">
+          <div class="field-block">
+            <label for="email">Admin email</label>
+            <input type="email" id="email" name="email" placeholder="admin@portal.com" required />
+          </div>
+          <div class="field-block">
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" placeholder="Enter admin password" required />
+          </div>
+          <button type="submit" class="button-primary">Sign in</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div id="suggestModal" class="modal-backdrop" data-modal="suggestModal">
+    <div class="modal-card">
+      <h2>Admin Tip</h2>
+      <p>Use the dashboard to group students by major and year, then add subjects and grades per student record.</p>
+      <div class="modal-actions">
+        <button type="button" class="button-secondary" onclick="closeModal('suggestModal')">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="scripts.js"></script>
+</body>
+</html>

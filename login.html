@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Portal Grading System - Login</title>
+  <base href="http://127.0.0.1:3000/">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="login-page fixed-action-page">
+  <div class="page-shell">
+    <div class="page-header">
+      <div>
+        <div class="brand">Grading Portal</div>
+        <p class="subtitle">Welcome to the Grading Portal of TFVC!</p>
+      </div>
+      <div class="page-actions">
+        <button type="button" class="theme-toggle-button" onclick="toggleTheme()">Switch to dark</button>
+        <button type="button" class="tip-button" onclick="openModal('suggestModal')">Need a tip?</button>
+      </div>
+    </div>
+
+    <div class="form-panel">
+      <div class="form-card">
+        <p class="helper">Welcome! <strong>Please Log in the Account</strong> that was given by the College Office, <strong>Thank you!</strong>.</p>
+        <div id="pageErrorMessage" class="status-message"></div>
+        <form id="loginForm" action="/login" method="post">
+          <div class="field-block">
+            <label for="email">Email address</label>
+            <input type="email" id="email" name="email" placeholder="you@example.com" required />
+          </div>
+          <div class="field-block">
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" placeholder="Enter your password" required />
+          </div>
+          <button type="submit" class="button-primary">Login</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div id="suggestModal" class="modal-backdrop" data-modal="suggestModal">
+    <div class="modal-card">
+      <h2>Study Suggestion</h2>
+      <p>Organize your week with a short review plan and return to the portal often to keep your progress on track.</p>
+      <div class="modal-actions">
+        <button type="button" class="button-secondary" onclick="closeModal('suggestModal')">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="loginErrorModal" class="modal-backdrop" data-modal="loginErrorModal">
+    <div class="modal-card">
+      <h2>Login Failed</h2>
+      <p>Invalid credentials. Please check your email and password and try again.</p>
+      <div class="modal-actions">
+        <button type="button" class="button-secondary" onclick="closeModal('loginErrorModal')">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="scripts.js"></script>
+  <script>
+    (function() {
+      const params = new URLSearchParams(window.location.search);
+      const error = params.get('error');
+      if (!error) return;
+
+      const modal = document.getElementById('loginErrorModal');
+      if (!modal) return;
+      const messageElement = modal.querySelector('.modal-card p');
+      if (messageElement) {
+        messageElement.textContent = error === 'invalid-credentials'
+          ? 'Invalid credentials. Please check your email and password and try again.'
+          : 'Login failed due to a server error. Please try again in a moment.';
+      }
+      modal.classList.add('visible');
+      document.body.classList.add('no-scroll');
+      window.history.replaceState(null, '', window.location.pathname);
+    })();
+  </script>
+</body>
+</html>

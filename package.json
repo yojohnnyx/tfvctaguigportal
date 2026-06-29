@@ -1,0 +1,14 @@
+{
+  "name": "portal-grading-system",
+  "version": "1.0.0",
+  "description": "Simple grading portal with SQLite-backed login and registration.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.4",
+    "express-session": "^1.17.4",
+    "sqlite3": "^6.0.1"
+  }
+}
