@@ -531,9 +531,12 @@ app.get('/admin', (req, res) => {
 <body>
   <div class="page-shell">
     <div class="page-header">
-      <div>
-        <div class="brand">Admin Dashboard</div>
-        <p class="subtitle">Search students and filter by major or block from the left panel.</p>
+      <div class="brand-row">
+        <img class="logo-img" src="/TFVS-CLG_logo.jpg" alt="TFVC College logo" />
+        <div>
+          <div class="brand">Admin Dashboard</div>
+          <p class="subtitle">Search students and filter by major or block from the left panel.</p>
+        </div>
       </div>
       <div class="page-actions">
         <button type="button" class="theme-toggle-button" onclick="toggleTheme()">Switch to dark</button>
@@ -749,11 +752,15 @@ app.get('/dev', (req, res) => {
 <body>
   <div class="page-shell">
     <div class="admin-grid dev-dashboard">
+      <button type="button" class="hamburger-button" onclick="toggleDevPanelMenu()" aria-expanded="false" aria-controls="devPanelMenu" aria-label="Open developer tools menu">☰</button>
       <aside class="admin-panel">
         <div class="page-header dev-left-header">
-          <div>
-            <div class="brand">Developer Dashboard</div>
-            <p class="subtitle">Manage accounts, run dev tools, and inspect portal state from the developer console.</p>
+          <div class="brand-row">
+            <img class="logo-img" src="/TFVS-CLG_logo.jpg" alt="TFVC College logo" />
+            <div>
+              <div class="brand">Developer Dashboard</div>
+              <p class="subtitle">Manage accounts, run dev tools, and inspect portal state from the developer console.</p>
+            </div>
           </div>
           <div class="page-actions">
             <button type="button" class="theme-toggle-button" onclick="toggleTheme()">Switch to dark</button>
@@ -762,8 +769,11 @@ app.get('/dev', (req, res) => {
             <a class="button-logout" href="/logout">Sign out</a>
           </div>
         </div>
-        <div class="panel-card">
-          <h2>Dev tools</h2>
+        <div class="panel-card" id="devPanelMenu">
+          <div class="panel-menu-header">
+            <h2>Dev tools</h2>
+            <button type="button" class="panel-close-button" onclick="toggleDevPanelMenu()" aria-label="Close developer tools menu">✕</button>
+          </div>
           <p class="helper">Use these actions to inspect the portal, export users, or run quick utility checks.</p>
           ${statusMessage ? `<div class="status-message">${escapeHtml(statusMessage)}</div>` : ''}
           <div class="field-block">
@@ -1037,9 +1047,12 @@ app.get('/staff', (req, res) => {
 <body>
   <div class="page-shell">
     <div class="page-header">
-      <div>
-        <div class="brand">Staff Record Viewer</div>
-        <p class="subtitle">View and print student records. This account cannot modify grades.</p>
+      <div class="brand-row">
+        <img class="logo-img" src="/TFVS-CLG_logo.jpg" alt="TFVC College logo" />
+        <div>
+          <div class="brand">Staff Record Viewer</div>
+          <p class="subtitle">View and print student records. This account cannot modify grades.</p>
+        </div>
       </div>
       <div class="page-actions">
         <button type="button" class="theme-toggle-button" onclick="toggleTheme()">Switch to dark</button>
@@ -1156,9 +1169,12 @@ app.get('/dashboard', (req, res) => {
 <body>
   <div class="page-shell">
     <div class="page-header">
-      <div>
-        <div class="brand">Grading Portal</div>
-        <p class="subtitle">Welcome back, ${escapeHtml(user.name)}. Your data is loaded from SQLite so this portal remains available after refresh.</p>
+      <div class="brand-row">
+        <img class="logo-img" src="/TFVS-CLG_logo.jpg" alt="TFVC College logo" />
+        <div>
+          <div class="brand">Grading Portal</div>
+          <p class="subtitle">Welcome back, ${escapeHtml(user.name)}. Your data is loaded from SQLite so this portal remains available after refresh.</p>
+        </div>
       </div>
       <div class="page-actions">
         <button type="button" class="theme-toggle-button" onclick="toggleTheme()">Switch to dark</button>

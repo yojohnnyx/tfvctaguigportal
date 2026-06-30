@@ -58,6 +58,18 @@ body {
   border: 1px solid var(--border);
   box-shadow: var(--shadow);
 }
+.brand-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.logo-img {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: var(--surface-soft);
+  border: 1px solid var(--border);
+}
 .brand {
   font-size: clamp(2rem, 2.7vw, 2.6rem);
   font-weight: 800;
@@ -172,6 +184,78 @@ body.fixed-action-page .tip-button {
 }
 body.fixed-action-page .page-shell {
   padding-bottom: 100px;
+}
+.hamburger-button {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-size: 1.2rem;
+  cursor: pointer;
+}
+.panel-menu-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.panel-close-button {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: var(--surface-soft);
+  color: var(--text);
+  cursor: pointer;
+}
+@media (max-width: 980px) {
+  .admin-grid.dev-dashboard {
+    grid-template-columns: 1fr;
+  }
+  .admin-grid.dev-dashboard .hamburger-button {
+    display: inline-flex;
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    z-index: 300;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    box-shadow: 0 12px 28px rgba(15, 23, 42, 0.18);
+  }
+  .admin-grid.dev-dashboard .hamburger-button.hidden {
+    display: none;
+  }
+  .admin-grid.dev-dashboard .admin-panel {
+    display: none;
+  }
+  .admin-grid.dev-dashboard .admin-panel.open {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 250;
+    background: rgba(15, 23, 42, 0.92);
+    padding: 24px;
+    overflow-y: auto;
+  }
+  .admin-grid.dev-dashboard .admin-panel.open .page-header.dev-left-header {
+    position: static;
+    padding-left: 0;
+  }
+  .admin-grid.dev-dashboard .admin-panel.open .panel-close-button {
+    display: inline-flex;
+  }
+  .admin-grid.dev-dashboard .admin-panel.open .panel-card {
+    background: var(--surface);
+    max-width: none;
+  }
 }
 @media (max-width: 760px) {
   .page-shell {

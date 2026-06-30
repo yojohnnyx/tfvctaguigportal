@@ -27,6 +27,19 @@ function closeModal(id) {
   document.body.classList.remove('no-scroll');
 }
 
+function toggleDevPanelMenu() {
+  const panel = document.querySelector('.admin-grid.dev-dashboard .admin-panel');
+  const button = document.querySelector('.hamburger-button');
+  if (!panel) return;
+
+  const isOpen = panel.classList.toggle('open');
+  if (button) {
+    button.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    button.classList.toggle('hidden', isOpen);
+  }
+  document.body.classList.toggle('no-scroll', isOpen);
+}
+
 function initTheme() {
   const savedTheme = localStorage.getItem('portalTheme');
   applyTheme(savedTheme === 'dark' ? 'dark' : 'light');
