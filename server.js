@@ -526,6 +526,8 @@ app.get('/admin', (req, res) => {
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Portal Admin Dashboard</title>
+  <link rel="icon" type="image/jpeg" href="/TFVS-CLG_logo.jpg" />
+  <link rel="shortcut icon" type="image/jpeg" href="/TFVS-CLG_logo.jpg" />
   <link rel="stylesheet" href="/styles.css" />
 </head>
 <body>
@@ -538,17 +540,13 @@ app.get('/admin', (req, res) => {
           <p class="subtitle">Search students and filter by major or block from the left panel.</p>
         </div>
       </div>
-      <div class="page-actions">
-        <button type="button" class="theme-toggle-button" onclick="toggleTheme()">Switch to dark</button>
-        <a class="button-enroll" href="/register.html?from=admin">Enroll student</a>
-        <a class="button-logout" href="/logout">Sign out</a>
-      </div>
-    </div>
-
-    <div class="admin-grid">
-      <aside class="admin-panel">
+      <button type="button" class="hamburger-button admin-hamburger" onclick="toggleAdminPanelMenu()" aria-expanded="false" aria-controls="adminPanelMenu" aria-label="Open admin menu">☰</button>
+      <aside class="admin-panel" id="adminPanelMenu">
         <div class="panel-card">
-          <h2>Search students</h2>
+          <div class="panel-menu-header">
+            <h2>Search students</h2>
+            <button type="button" class="panel-close-button" onclick="toggleAdminPanelMenu()" aria-label="Close admin menu">✕</button>
+          </div>
           <p class="helper">Filter student cards by name, major, or block.</p>
           ${statusMessage ? `<div class="status-message">${escapeHtml(statusMessage)}</div>` : ''}
           <div class="active-filters" id="activeFilters">No active filters</div>
@@ -747,6 +745,8 @@ app.get('/dev', (req, res) => {
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Developer Dashboard</title>
+  <link rel="icon" type="image/jpeg" href="/TFVS-CLG_logo.jpg" />
+  <link rel="shortcut icon" type="image/jpeg" href="/TFVS-CLG_logo.jpg" />
   <link rel="stylesheet" href="/styles.css" />
 </head>
 <body>
@@ -1042,6 +1042,8 @@ app.get('/staff', (req, res) => {
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Staff Record Viewer</title>
+  <link rel="icon" type="image/jpeg" href="/TFVS-CLG_logo.jpg" />
+  <link rel="shortcut icon" type="image/jpeg" href="/TFVS-CLG_logo.jpg" />
   <link rel="stylesheet" href="/styles.css" />
 </head>
 <body>
@@ -1164,6 +1166,8 @@ app.get('/dashboard', (req, res) => {
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Portal Grading System - Dashboard</title>
+  <link rel="icon" type="image/jpeg" href="/TFVS-CLG_logo.jpg" />
+  <link rel="shortcut icon" type="image/jpeg" href="/TFVS-CLG_logo.jpg" />
   <link rel="stylesheet" href="/styles.css" />
 </head>
 <body>

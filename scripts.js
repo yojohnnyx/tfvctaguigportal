@@ -37,7 +37,23 @@ function toggleDevPanelMenu() {
     button.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
     button.classList.toggle('hidden', isOpen);
   }
-  document.body.classList.toggle('no-scroll', isOpen);
+  if (isOpen) {
+    document.body.classList.add('no-scroll');
+  } else {
+    document.body.classList.remove('no-scroll');
+  }
+}
+
+function toggleAdminPanelMenu() {
+  const panel = document.getElementById('adminPanelMenu');
+  const button = document.querySelector('.admin-hamburger');
+  if (!panel) return;
+
+  const isOpen = panel.classList.toggle('open');
+  if (button) {
+    button.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    button.classList.toggle('hidden', isOpen);
+  }
 }
 
 function initTheme() {

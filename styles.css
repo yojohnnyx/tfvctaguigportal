@@ -61,14 +61,15 @@ body {
 .brand-row {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 20px;
 }
 .logo-img {
-  width: 48px;
-  height: 48px;
-  border-radius: 14px;
+  width: 72px;
+  height: 72px;
+  border-radius: 18px;
   background: var(--surface-soft);
   border: 1px solid var(--border);
+  object-fit: contain;
 }
 .brand {
   font-size: clamp(2rem, 2.7vw, 2.6rem);
@@ -244,10 +245,15 @@ body.fixed-action-page .page-shell {
     background: rgba(15, 23, 42, 0.92);
     padding: 24px;
     overflow-y: auto;
+    height: 100vh;
+    max-height: 100vh;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
   }
   .admin-grid.dev-dashboard .admin-panel.open .page-header.dev-left-header {
     position: static;
     padding-left: 0;
+    margin-bottom: 24px;
   }
   .admin-grid.dev-dashboard .admin-panel.open .panel-close-button {
     display: inline-flex;
@@ -384,6 +390,22 @@ body.fixed-action-page .page-shell {
   max-width: 320px;
   z-index: 1;
 }
+.admin-hamburger {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 1.2rem;
+  cursor: pointer;
+}
+.admin-panel.open {
+  display: block;
+}
 .panel-card {
   background: var(--surface);
   border: 1px solid var(--border);
@@ -458,12 +480,51 @@ body.fixed-action-page .page-shell {
   .admin-grid {
     grid-template-columns: 1fr;
   }
-  .admin-panel,
+  .admin-hamburger {
+    display: inline-flex;
+    position: absolute;
+    top: 24px;
+    right: 24px;
+    z-index: 30;
+  }
+  .page-header {
+    position: relative;
+  }
+  .admin-grid .admin-panel,
   .dev-dashboard .admin-panel {
+    display: none;
     position: static !important;
     top: auto !important;
     width: 100%;
     max-width: 100%;
+  }
+  .admin-panel.open {
+    display: flex !important;
+    flex-direction: column;
+    position: fixed !important;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.92);
+    padding: 24px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    height: 100vh;
+    max-height: 100vh;
+    z-index: 250;
+    touch-action: pan-y;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+  }
+  .admin-panel.open .panel-close-button {
+    display: inline-flex;
+  }
+  .admin-panel.open .panel-card {
+    width: 100%;
+    max-width: 100%;
+    background: var(--surface);
+    min-height: 100%;
+  }
+  .admin-panel.open .panel-card h2 {
+    margin-top: 0;
   }
   .panel-card,
   .student-card,
