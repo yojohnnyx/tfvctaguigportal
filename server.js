@@ -537,48 +537,30 @@ app.get('/admin', (req, res) => {
         <img class="logo-img" src="/TFVS-CLG_logo.jpg" alt="TFVC College logo" />
         <div>
           <div class="brand">Admin Dashboard</div>
-          <p class="subtitle">Search students and filter by major or block from the left panel.</p>
+          <p class="subtitle">Search students by name or email from the left panel.</p>
         </div>
       </div>
       <button type="button" class="hamburger-button admin-hamburger" onclick="toggleAdminPanelMenu()" aria-expanded="false" aria-controls="adminPanelMenu" aria-label="Open admin menu">☰</button>
+      <div class="page-actions">
+        <button type="button" class="theme-toggle-button" onclick="toggleTheme()">Switch to dark</button>
+        <a class="button-enroll" href="/register.html?from=admin">Enroll student</a>
+        <a class="button-logout" href="/logout">Sign out</a>
+      </div>
+    </div>
+
+    <div class="admin-grid">
       <aside class="admin-panel" id="adminPanelMenu">
         <div class="panel-card">
           <div class="panel-menu-header">
             <h2>Search students</h2>
             <button type="button" class="panel-close-button" onclick="toggleAdminPanelMenu()" aria-label="Close admin menu">✕</button>
           </div>
-          <p class="helper">Filter student cards by name, major, or block.</p>
+          <p class="helper">Search students by name or email in the admin dashboard.</p>
           ${statusMessage ? `<div class="status-message">${escapeHtml(statusMessage)}</div>` : ''}
-          <div class="active-filters" id="activeFilters">No active filters</div>
           <div class="field-block">
-            <label for="studentSearch">Student name or email</label>
+            <label for="studentSearch">Search students</label>
             <input type="search" id="studentSearch" placeholder="Search students..." />
           </div>
-          <div class="field-block">
-            <label for="majorFilter">Major</label>
-            <select id="majorFilter">
-              <option value="">All majors</option>
-              ${majors.map((major) => `<option value="${escapeHtml(major)}">${escapeHtml(major)}</option>`).join('')}
-            </select>
-          </div>
-          <div class="field-block">
-            <label for="yearFilter">Year level</label>
-            <select id="yearFilter">
-              <option value="">All years</option>
-              ${years.map((year) => `<option value="${escapeHtml(year)}">${escapeHtml(year)}</option>`).join('')}
-            </select>
-          </div>
-          <div class="field-block">
-            <label for="sortOrder">Sort by</label>
-            <select id="sortOrder">
-              <option value="">Default order</option>
-              <option value="name-asc">Name — A to Z</option>
-              <option value="name-desc">Name — Z to A</option>
-              <option value="major">Major</option>
-              <option value="year">Year level</option>
-            </select>
-          </div>
-          <button type="button" class="button-secondary" onclick="resetAdminFilters()">Reset filters</button>
         </div>
       </aside>
 

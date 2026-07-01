@@ -54,6 +54,7 @@ function toggleAdminPanelMenu() {
     button.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
     button.classList.toggle('hidden', isOpen);
   }
+  document.body.classList.toggle('no-scroll', isOpen);
 }
 
 function initTheme() {
@@ -217,6 +218,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
   const searchInput = document.getElementById('studentSearch');
   const majorFilter = document.getElementById('majorFilter');
+  const courseFilter = document.getElementById('courseFilter');
   const yearFilter = document.getElementById('yearFilter');
   const sortOrder = document.getElementById('sortOrder');
   const activeFilters = document.getElementById('activeFilters');
@@ -287,6 +289,7 @@ window.addEventListener('DOMContentLoaded', () => {
   const applyFilters = () => {
     const searchValue = searchInput?.value.trim().toLowerCase() || '';
     const majorValue = majorFilter?.value.trim().toLowerCase() || '';
+    const roleValue = courseFilter?.value.trim().toLowerCase() || '';
     const yearValue = yearFilter?.value.trim().toLowerCase() || '';
     const selectedRole = document.querySelector('.role-summary.active')?.dataset.role || 'all';
 
@@ -297,9 +300,10 @@ window.addEventListener('DOMContentLoaded', () => {
       const roleText = (card.dataset.role || '').toLowerCase();
       const matchesSearch = !searchValue || nameValue.includes(searchValue) || gradeLevelValue.includes(searchValue) || roleText.includes(searchValue);
       const matchesMajor = !majorValue || gradeLevelValue.includes(majorValue) || roleText === majorValue;
+      const matchesRole = !roleValue || roleText === roleValue;
       const matchesYear = !yearValue || yearLevelValue === yearValue;
       const matchesSummary = selectedRole === 'all' || roleText === selectedRole;
-      card.dataset.hidden = !(matchesSearch && matchesMajor && matchesYear && matchesSummary);
+      card.dataset.hidden = !(matchesSearch && matchesMajor && matchesRole && matchesYear && matchesSummary);
     });
   };
 
@@ -656,6 +660,7 @@ window.addEventListener('DOMContentLoaded', () => {
     const filters = [];
     if (searchInput?.value.trim()) filters.push(`Search: ${searchInput.value.trim()}`);
     if (majorFilter?.value) filters.push(`Major: ${majorFilter.value}`);
+    if (courseFilter?.value) filters.push(`Role: ${courseFilter.value}`);
     if (yearFilter?.value) filters.push(`Year: ${yearFilter.value}`);
     if (sortOrder?.value) {
       const label = sortOrder.options[sortOrder.selectedIndex]?.text || sortOrder.value;
@@ -714,6 +719,12 @@ window.addEventListener('DOMContentLoaded', () => {
       updateActiveFilters();
     });
   }
+  if (courseFilter) {
+    courseFilter.addEventListener('change', () => {
+      applyFilters();
+      updateActiveFilters();
+    });
+  }
   if (yearFilter) {
     yearFilter.addEventListener('change', () => {
       applyFilters();
@@ -724,6 +735,7 @@ window.addEventListener('DOMContentLoaded', () => {
   window.resetAdminFilters = () => {
     if (searchInput) searchInput.value = '';
     if (majorFilter) majorFilter.value = '';
+    if (courseFilter) courseFilter.value = '';
     if (yearFilter) yearFilter.value = '';
     if (sortOrder) sortOrder.value = '';
     sortCards();
