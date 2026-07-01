@@ -388,6 +388,98 @@ window.addEventListener('DOMContentLoaded', () => {
     });
   };
 
+  const renderStudentDetailModal = (student) => {
+    const detailStudentName = document.getElementById('detailStudentName');
+    const detailStudentId = document.getElementById('detailStudentId');
+    const detailStudentMajor = document.getElementById('detailStudentMajor');
+    const detailStudentYear = document.getElementById('detailStudentYear');
+    const detailSubjectsTable = document.getElementById('detailSubjectsTable');
+    const detailFormStudentId = document.getElementById('detailFormStudentId');
+    const detailFormGradeId = document.getElementById('detailFormGradeId');
+    const detailSubject = document.getElementById('detailSubject');
+    const detailGrade = document.getElementById('detailGrade');
+    const detailFormSubmitButton = document.getElementById('detailFormSubmitButton');
+
+    if (!student || !detailStudentName || !detailStudentId || !detailStudentMajor || !detailStudentYear || !detailSubjectsTable || !detailFormStudentId || !detailFormGradeId || !detailSubject || !detailGrade || !detailFormSubmitButton) {
+      return;
+    }
+
+    detailStudentName.textContent = student.name || 'Student details';
+    detailStudentId.textContent = student.studentId || 'N/A';
+    detailStudentMajor.textContent = student.major || 'Unknown major';
+    detailStudentYear.textContent = student.yearLevel || 'Unspecified year';
+    detailFormStudentId.value = student.id;
+    detailFormGradeId.value = '';
+    detailSubject.value = '';
+    detailGrade.value = '';
+    detailFormSubmitButton.textContent = 'Add grade';
+
+    if (!Array.isArray(student.grades) || student.grades.length === 0) {
+      detailSubjectsTable.innerHTML = '<tr><td colspan="3">No grades recorded yet.</td></tr>';
+      return;
+    }
+
+    detailSubjectsTable.innerHTML = student.grades
+      .map((grade) => `
+        <tr data-grade-id="${grade.id}">
+          <td>${grade.subject || ''}</td>
+          <td>${grade.grade || ''}</td>
+          <td><button type="button" class="student-grade-edit" data-user-id="${student.id}" data-grade-id="${grade.id}">Edit</button></td>
+        </tr>
+      `)
+      .join('');
+  };
+
+  const setupStudentDetailModal = () => {
+    document.body.addEventListener('click', (event) => {
+      const target = event.target.closest('.student-card-button');
+      if (!target) return;
+      event.preventDefault();
+
+      const studentId = target.dataset.userId;
+      const student = Array.isArray(window.adminStudentData)
+        ? window.adminStudentData.find((item) => String(item.id) === String(studentId))
+        : null;
+
+      if (!student) return;
+      renderStudentDetailModal(student);
+      openModal('studentDetailModal');
+    });
+
+    const detailSubjectsTable = document.getElementById('detailSubjectsTable');
+    if (!detailSubjectsTable) return;
+
+    detailSubjectsTable.addEventListener('click', (event) => {
+      const editButton = event.target.closest('.student-grade-edit');
+      if (!editButton) return;
+
+      const gradeId = editButton.dataset.gradeId;
+      const studentId = editButton.dataset.userId;
+      const student = Array.isArray(window.adminStudentData)
+        ? window.adminStudentData.find((item) => String(item.id) === String(studentId))
+        : null;
+      if (!student) return;
+
+      const grade = Array.isArray(student.grades)
+        ? student.grades.find((item) => String(item.id) === String(gradeId))
+        : null;
+      if (!grade) return;
+
+      const detailFormGradeId = document.getElementById('detailFormGradeId');
+      const detailSubject = document.getElementById('detailSubject');
+      const detailGrade = document.getElementById('detailGrade');
+      const detailFormSubmitButton = document.getElementById('detailFormSubmitButton');
+
+      if (!detailFormGradeId || !detailSubject || !detailGrade || !detailFormSubmitButton) return;
+
+      detailFormGradeId.value = grade.id;
+      detailSubject.value = grade.subject || '';
+      detailGrade.value = grade.grade || '';
+      detailFormSubmitButton.textContent = 'Update grade';
+      openModal('studentDetailModal');
+    });
+  };
+
   const setupAccountForm = () => {
     const accountEditForm = document.getElementById('accountEditForm');
     if (!accountEditForm) return;
@@ -698,6 +790,7 @@ window.addEventListener('DOMContentLoaded', () => {
   setupAccountForm();
   setupDeleteAccount();
   setupRoleSummaryButtons();
+  setupStudentDetailModal();
 
   if (sortOrder) {
     sortOrder.addEventListener('change', () => {
@@ -729,6 +822,17 @@ window.addEventListener('DOMContentLoaded', () => {
     yearFilter.addEventListener('change', () => {
       applyFilters();
       updateActiveFilters();
+    });
+  }
+
+  const studentGradeForm = document.getElementById('studentGradeForm');
+  if (studentGradeForm) {
+    studentGradeForm.addEventListener('submit', (event) => {
+      const gradeIdField = document.getElementById('detailFormGradeId');
+      const submitButton = document.getElementById('detailFormSubmitButton');
+      if (gradeIdField && submitButton) {
+        submitButton.textContent = gradeIdField.value ? 'Update grade' : 'Add grade';
+      }
     });
   }
 

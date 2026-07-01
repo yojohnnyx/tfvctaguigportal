@@ -632,6 +632,31 @@ body.fixed-action-page .page-shell {
 .student-card {
   padding: 24px;
 }
+.student-card-button {
+  width: 100%;
+  display: block;
+  text-align: left;
+  border: none;
+  background: transparent;
+  padding: 0;
+  color: inherit;
+  cursor: pointer;
+}
+.student-card-button:hover {
+  background: rgba(37, 99, 235, 0.08);
+}
+.student-card-title {
+  font-size: 1.3rem;
+  font-weight: 800;
+  margin-bottom: 10px;
+}
+.student-card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
 .student-card[data-hidden="true"] {
   display: none;
 }
@@ -732,6 +757,38 @@ tbody tr:hover {
   padding: 28px;
   border: 1px solid var(--border);
   box-shadow: 0 26px 70px rgba(15, 23, 42, 0.24);
+}
+.student-detail-card {
+  width: min(100%, 760px);
+}
+.modal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 24px;
+}
+.student-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(140px, 1fr));
+  gap: 18px;
+  margin-bottom: 24px;
+}
+.detail-label {
+  margin: 0 0 6px;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+.student-grade-edit {
+  border: none;
+  background: var(--surface-soft);
+  color: var(--text);
+  border-radius: 14px;
+  padding: 8px 12px;
+  cursor: pointer;
+}
+.student-grade-edit:hover {
+  background: var(--surface);
 }
 .modal-card h2 {
   margin-top: 0;

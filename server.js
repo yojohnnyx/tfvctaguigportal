@@ -455,12 +455,12 @@ app.post('/admin/grade', (req, res) => {
   }
 
   const studentId = req.body.studentId?.trim();
+  const gradeId = req.body.gradeId?.trim();
   const subject = req.body.subject?.trim();
-  const teacher = req.body.teacher?.trim();
   const grade = req.body.grade?.trim();
 
-  if (!studentId || !subject || !teacher || !grade) {
-    return res.send('Please provide student, subject, teacher, and grade. <a href="/admin">Back</a>');
+  if (!studentId || !subject || !grade) {
+    return res.send('Please provide student, subject, and grade. <a href="/admin">Back</a>');
   }
 
   const gradeValue = parseFloat(grade);
@@ -473,8 +473,19 @@ app.post('/admin/grade', (req, res) => {
       return res.send('Selected student is invalid. Please choose a valid student account. <a href="/admin">Back</a>');
     }
 
+    if (gradeId) {
+      const update = `UPDATE grades SET subject = ?, grade = ? WHERE id = ? AND userId = ?`;
+      db.run(update, [subject, grade, gradeId, studentId], function (err) {
+        if (err || this.changes === 0) {
+          return res.send('Unable to update grade. <a href="/admin">Back</a>');
+        }
+        return res.redirect('/admin?status=grade-updated');
+      });
+      return;
+    }
+
     const insert = `INSERT INTO grades (userId, subject, teacher, grade) VALUES (?, ?, ?, ?)`;
-    db.run(insert, [studentId, subject, teacher, grade], function (err) {
+    db.run(insert, [studentId, subject, null, grade], function (err) {
       if (err) {
         return res.send('Unable to save grade. <a href="/admin">Back</a>');
       }
@@ -516,6 +527,8 @@ app.get('/admin', (req, res) => {
       let statusMessage = '';
       if (status === 'grade-added') {
         statusMessage = 'Grade added successfully. Student dashboard will update automatically.';
+      } else if (status === 'grade-updated') {
+        statusMessage = 'Grade updated successfully. Student dashboard will update automatically.';
       } else if (status === 'student-created') {
         statusMessage = 'Student account created successfully.';
       }
@@ -585,7 +598,7 @@ app.get('/admin', (req, res) => {
             </div>
           </div>
           <h2>Students</h2>
-          <p class="helper">Add subjects and grades for any student from this admin panel.</p>
+          <p class="helper">Click a student name to open their subject and grade editor.</p>
         </section>
 `;
 
@@ -596,70 +609,87 @@ app.get('/admin', (req, res) => {
         const safeYearLevel = escapeHtml(user.yearLevel || 'Unspecified year');
         const userSubjectList = (gradesByUser[user.id] || []).map((grade) => escapeHtml(grade.subject)).filter(Boolean).join(', ');
         html += `
-      <section class="card student-card" data-name="${escapeHtml((user.name + ' ' + user.email).toLowerCase())}" data-subjects="${escapeHtml(userSubjectList.toLowerCase())}" data-year="${escapeHtml((user.yearLevel || 'Unspecified year').toLowerCase())}" data-major="${escapeHtml((user.gradeLevel || 'Unknown major').toLowerCase())}">
-        <div class="student-header">
-          <div>
-            <div class="brand">${safeName}</div>
-            <p class="subtitle">${safeEmail}</p>
+      <section class="card student-card" data-user-id="${user.id}" data-name="${escapeHtml((user.name + ' ' + (user.studentId || '') + ' ' + (user.gradeLevel || '')).toLowerCase())}" data-grade-level="${escapeHtml((user.gradeLevel || '').toLowerCase())}" data-year-level="${escapeHtml((user.yearLevel || '').toLowerCase())}" data-student-id="${escapeHtml((user.studentId || '').toLowerCase())}">
+        <button type="button" class="student-card-button" data-user-id="${user.id}">
+          <div class="student-card-title">${safeName}</div>
+          <div class="student-card-meta">
+            <span>${escapeHtml(user.studentId || 'No ID')}</span>
+            <span>${safeGradeLevel}</span>
           </div>
-          <div class="student-actions">
-            <div class="student-meta">
-              <span>${safeGradeLevel}</span>
-              <span>${safeYearLevel}</span>
-            </div>
-            <button type="button" class="collapse-toggle">Collapse</button>
-          </div>
-        </div>
-        <div class="student-content">
-          <div class="table-wrapper">
-            <table>
-              <thead>
-                <tr>
-                  <th>Subject</th>
-                  <th>Teacher</th>
-                  <th>Grade</th>
-                </tr>
-              </thead>
-              <tbody>
-`;
-
-        const userGrades = gradesByUser[user.id] || [];
-        if (userGrades.length === 0) {
-          html += `              <tr><td colspan="3">No grades recorded yet.</td></tr>\n`;
-        } else {
-          userGrades.forEach((grade) => {
-            html += `              <tr><td>${escapeHtml(grade.subject)}</td><td>${escapeHtml(grade.teacher || 'N/A')}</td><td>${escapeHtml(grade.grade)}</td></tr>\n`;
-          });
-        }
-
-        html += `            </tbody>
-            </table>
-          </div>
-          <form action="/admin/grade" method="post" class="grade-form">
-            <input type="hidden" name="studentId" value="${user.id}" />
-            <div class="form-grid">
-              <div class="field-block">
-                <label for="subject-${user.id}">Subject</label>
-                <input type="text" id="subject-${user.id}" name="subject" placeholder="e.g. Math" required />
-              </div>
-              <div class="field-block">
-                <label for="grade-${user.id}">Grade</label>
-                <input type="text" id="grade-${user.id}" name="grade" placeholder="e.g. 1.00 or 1.25" required />
-              </div>
-              <div class="field-block">
-                <label for="teacher-${user.id}">Teacher</label>
-                <input type="text" id="teacher-${user.id}" name="teacher" placeholder="e.g. Mr. Kim" required />
-              </div>
-            </div>
-            <button type="submit" class="button-primary">Add grade</button>
-          </form>
-        </div>
+        </button>
       </section>
 `;
       });
 
       html += `    </div>
   </div>
+
+  <div id="studentDetailModal" class="modal-backdrop" data-modal="studentDetailModal">
+    <div class="modal-card student-detail-card">
+      <div class="modal-header">
+        <div>
+          <h2 id="detailStudentName">Student details</h2>
+          <p class="helper">Manage subjects and grades for this student.</p>
+        </div>
+        <button type="button" class="modal-close" aria-label="Close student details">✕</button>
+      </div>
+      <div class="student-detail-grid">
+        <div>
+          <p class="detail-label">Student ID</p>
+          <p id="detailStudentId"></p>
+        </div>
+        <div>
+          <p class="detail-label">Major</p>
+          <p id="detailStudentMajor"></p>
+        </div>
+        <div>
+          <p class="detail-label">Year level</p>
+          <p id="detailStudentYear"></p>
+        </div>
+      </div>
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Subject</th>
+              <th>Grade</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="detailSubjectsTable"></tbody>
+        </table>
+      </div>
+      <form id="studentGradeForm" action="/admin/grade" method="post" class="grade-form">
+        <input type="hidden" name="studentId" id="detailFormStudentId" />
+        <input type="hidden" name="gradeId" id="detailFormGradeId" />
+        <div class="form-grid">
+          <div class="field-block">
+            <label for="detailSubject">Subject</label>
+            <input type="text" id="detailSubject" name="subject" placeholder="e.g. Math" required />
+          </div>
+          <div class="field-block">
+            <label for="detailGrade">Grade</label>
+            <input type="text" id="detailGrade" name="grade" placeholder="e.g. 1.00 or 1.25" required />
+          </div>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="button-secondary" onclick="closeModal('studentDetailModal')">Cancel</button>
+          <button type="submit" class="button-primary" id="detailFormSubmitButton">Add grade</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    window.adminStudentData = ${JSON.stringify(users.map((user) => ({
+      id: user.id,
+      name: user.name,
+      studentId: user.studentId || '',
+      major: user.gradeLevel || 'Unknown major',
+      yearLevel: user.yearLevel || 'Unspecified year',
+      grades: (gradesByUser[user.id] || []).map((grade) => ({ id: grade.id, subject: grade.subject, grade: grade.grade }))
+    }))).replace(/</g, '\u003c')};
+  </script>
 
   <script src="/scripts.js"></script>
 </body>
