@@ -1,4 +1,4 @@
-﻿const express = require('express');
+const express = require('express');
 const session = require('express-session');
 const path = require('path');
 const { db, initDb } = require('./lib/db');
@@ -539,21 +539,21 @@ app.get('/admin', (req, res) => {
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Portal Admin Dashboard</title>
-  <link rel="icon" type="image/jpeg" href="/TFVS-CLG_logo.jpg" />
-  <link rel="shortcut icon" type="image/jpeg" href="/TFVS-CLG_logo.jpg" />
+  <link rel="icon" type="image/png" href="/TFVC-CLG_Logo.png" />
+  <link rel="shortcut icon" type="image/png" href="/TFVC-CLG_Logo.png" />
   <link rel="stylesheet" href="/styles.css" />
 </head>
 <body>
   <div class="page-shell">
     <div class="page-header">
       <div class="brand-row">
-        <img class="logo-img" src="/TFVS-CLG_logo.jpg" alt="TFVC College logo" />
+        <img class="logo-img" src="/TFVC-CLG_Logo.png" alt="TFVC College logo" />
         <div>
           <div class="brand">Admin Dashboard</div>
           <p class="subtitle">Search students by name or email from the left panel.</p>
         </div>
       </div>
-      <button type="button" class="hamburger-button admin-hamburger" onclick="toggleAdminPanelMenu()" aria-expanded="false" aria-controls="adminPanelMenu" aria-label="Open admin menu">☰</button>
+      <button type="button" class="hamburger-button admin-hamburger" onclick="toggleAdminPanelMenu()" aria-expanded="false" aria-controls="adminPanelMenu" aria-label="Open admin menu">?</button>
       <div class="page-actions">
         <button type="button" class="theme-toggle-button" onclick="toggleTheme()">Switch to dark</button>
         <a class="button-enroll" href="/register.html?from=admin">Enroll student</a>
@@ -566,7 +566,7 @@ app.get('/admin', (req, res) => {
         <div class="panel-card">
           <div class="panel-menu-header">
             <h2>Search students</h2>
-            <button type="button" class="panel-close-button" onclick="toggleAdminPanelMenu()" aria-label="Close admin menu">✕</button>
+            <button type="button" class="panel-close-button" onclick="toggleAdminPanelMenu()" aria-label="Close admin menu">?</button>
           </div>
           <p class="helper">Search students by name or email in the admin dashboard.</p>
           ${statusMessage ? `<div class="status-message">${escapeHtml(statusMessage)}</div>` : ''}
@@ -631,7 +631,7 @@ app.get('/admin', (req, res) => {
           <h2 id="detailStudentName">Student details</h2>
           <p class="helper">Manage subjects and grades for this student.</p>
         </div>
-        <button type="button" class="modal-close" aria-label="Close student details">✕</button>
+        <button type="button" class="modal-close" aria-label="Close student details">?</button>
       </div>
       <div class="student-detail-grid">
         <div>
@@ -757,18 +757,18 @@ app.get('/dev', (req, res) => {
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Developer Dashboard</title>
-  <link rel="icon" type="image/jpeg" href="/TFVS-CLG_logo.jpg" />
-  <link rel="shortcut icon" type="image/jpeg" href="/TFVS-CLG_logo.jpg" />
+  <link rel="icon" type="image/png" href="/TFVC-CLG_Logo.png" />
+  <link rel="shortcut icon" type="image/png" href="/TFVC-CLG_Logo.png" />
   <link rel="stylesheet" href="/styles.css" />
 </head>
 <body>
   <div class="page-shell">
     <div class="admin-grid dev-dashboard">
-      <button type="button" class="hamburger-button" onclick="toggleDevPanelMenu()" aria-expanded="false" aria-controls="devPanelMenu" aria-label="Open developer tools menu">☰</button>
+      <button type="button" class="hamburger-button" onclick="toggleDevPanelMenu()" aria-expanded="false" aria-controls="devPanelMenu" aria-label="Open developer tools menu">?</button>
       <aside class="admin-panel">
         <div class="page-header dev-left-header">
           <div class="brand-row">
-            <img class="logo-img" src="/TFVS-CLG_logo.jpg" alt="TFVC College logo" />
+            <img class="logo-img" src="/TFVC-CLG_Logo.png" alt="TFVC College logo" />
             <div>
               <div class="brand">Developer Dashboard</div>
               <p class="subtitle">Manage accounts, run dev tools, and inspect portal state from the developer console.</p>
@@ -784,7 +784,7 @@ app.get('/dev', (req, res) => {
         <div class="panel-card" id="devPanelMenu">
           <div class="panel-menu-header">
             <h2>Dev tools</h2>
-            <button type="button" class="panel-close-button" onclick="toggleDevPanelMenu()" aria-label="Close developer tools menu">✕</button>
+            <button type="button" class="panel-close-button" onclick="toggleDevPanelMenu()" aria-label="Close developer tools menu">?</button>
           </div>
           <p class="helper">Use these actions to inspect the portal, export users, or run quick utility checks.</p>
           ${statusMessage ? `<div class="status-message">${escapeHtml(statusMessage)}</div>` : ''}
@@ -813,8 +813,8 @@ app.get('/dev', (req, res) => {
             <label for="sortOrder">Sort by</label>
             <select id="sortOrder">
               <option value="">Default order</option>
-              <option value="name-asc">Name — A to Z</option>
-              <option value="name-desc">Name — Z to A</option>
+              <option value="name-asc">Name � A to Z</option>
+              <option value="name-desc">Name � Z to A</option>
               <option value="role">Role</option>
               <option value="year">Year level</option>
             </select>
@@ -877,7 +877,7 @@ app.get('/dev', (req, res) => {
                 const safeStudentId = escapeHtml(user.studentId || '');
                 return `<button type="button" class="account-entry" data-user-id="${user.id}" data-name="${safeName}" data-email="${safeEmail}" data-role="${safeRole}" data-grade-level="${safeGradeLevel}" data-year-level="${safeYearLevel}" data-student-id="${safeStudentId}">
                   <span class="account-title">${safeName}</span>
-                  <span class="account-meta">${safeRole}${safeStudentId ? ` • ${safeStudentId}` : ''}</span>
+                  <span class="account-meta">${safeRole}${safeStudentId ? ` � ${safeStudentId}` : ''}</span>
                   <span class="account-email">${safeEmail}</span>
                 </button>`;
               })
@@ -1054,15 +1054,15 @@ app.get('/staff', (req, res) => {
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Staff Record Viewer</title>
-  <link rel="icon" type="image/jpeg" href="/TFVS-CLG_logo.jpg" />
-  <link rel="shortcut icon" type="image/jpeg" href="/TFVS-CLG_logo.jpg" />
+  <link rel="icon" type="image/png" href="/TFVC-CLG_Logo.png" />
+  <link rel="shortcut icon" type="image/png" href="/TFVC-CLG_Logo.png" />
   <link rel="stylesheet" href="/styles.css" />
 </head>
 <body>
   <div class="page-shell">
     <div class="page-header">
       <div class="brand-row">
-        <img class="logo-img" src="/TFVS-CLG_logo.jpg" alt="TFVC College logo" />
+        <img class="logo-img" src="/TFVC-CLG_Logo.png" alt="TFVC College logo" />
         <div>
           <div class="brand">Staff Record Viewer</div>
           <p class="subtitle">View and print student records. This account cannot modify grades.</p>
@@ -1094,7 +1094,7 @@ app.get('/staff', (req, res) => {
           <div>
             <div class="brand">${safeName}</div>
             <p class="subtitle">${safeEmail}</p>
-            <p class="subtitle"><strong>Course:</strong> ${safeGradeLevel} • <strong>Year level:</strong> ${safeYearLevel}</p>
+            <p class="subtitle"><strong>Course:</strong> ${safeGradeLevel} � <strong>Year level:</strong> ${safeYearLevel}</p>
           </div>
         </div>
         <div class="student-content">
@@ -1178,15 +1178,15 @@ app.get('/dashboard', (req, res) => {
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Portal Grading System - Dashboard</title>
-  <link rel="icon" type="image/jpeg" href="/TFVS-CLG_logo.jpg" />
-  <link rel="shortcut icon" type="image/jpeg" href="/TFVS-CLG_logo.jpg" />
+  <link rel="icon" type="image/png" href="/TFVC-CLG_Logo.png" />
+  <link rel="shortcut icon" type="image/png" href="/TFVC-CLG_Logo.png" />
   <link rel="stylesheet" href="/styles.css" />
 </head>
 <body>
   <div class="page-shell">
     <div class="page-header">
       <div class="brand-row">
-        <img class="logo-img" src="/TFVS-CLG_logo.jpg" alt="TFVC College logo" />
+        <img class="logo-img" src="/TFVC-CLG_Logo.png" alt="TFVC College logo" />
         <div>
           <div class="brand">Grading Portal</div>
           <p class="subtitle">Welcome back, ${escapeHtml(user.name)}. Your data is loaded from SQLite so this portal remains available after refresh.</p>
