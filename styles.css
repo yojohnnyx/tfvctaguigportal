@@ -64,11 +64,11 @@ body {
   gap: 20px;
 }
 .logo-img {
-  width: 110px;
-  height: 115px;
-  border-radius: 18px;
-  background: var(--surface-soft);
-  border: 1px solid var(--border);
+  width: 150px;
+  height: 150px;
+  border-radius: 0;
+  background: transparent;
+  border: none;
   object-fit: contain;
 }
 .brand {
