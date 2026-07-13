@@ -99,11 +99,13 @@ function isValidGmailLocalPart(email) {
   return true;
 }
 
-function showPageStatusMessage(message) {
+function showPageStatusMessage(message, type = 'error') {
   const statusMessage = document.getElementById('pageErrorMessage');
   if (!statusMessage) return;
   statusMessage.textContent = message;
-  statusMessage.style.display = 'block';
+  statusMessage.classList.remove('success', 'error');
+  statusMessage.classList.add(type === 'success' ? 'success' : 'error');
+  statusMessage.style.display = message ? 'block' : 'none';
 }
 
 function handlePageErrorsFromQuery() {

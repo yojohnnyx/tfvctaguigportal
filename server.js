@@ -992,7 +992,7 @@ app.get('/dev', (req, res) => {
               <strong>${studentCount}</strong>
             </button>
           </div>
-          <h2>Account creation</h2
+          <h2>Account creation</h2>
           <p class="helper">Create admin and staff accounts. Staff users can only view and print student records.</p>
         </section>
 
@@ -1014,7 +1014,7 @@ app.get('/dev', (req, res) => {
                 const safeStudentId = escapeHtml(user.studentId || '');
                 return `<button type="button" class="account-entry" data-user-id="${user.id}" data-name="${safeName}" data-email="${safeEmail}" data-role="${safeRole}" data-grade-level="${safeGradeLevel}" data-year-level="${safeYearLevel}" data-student-id="${safeStudentId}">
                   <span class="account-title">${safeName}</span>
-                  <span class="account-meta">${safeRole}${safeStudentId ? ` � ${safeStudentId}` : ''}</span>
+                  <span class="account-meta">${safeRole}${safeStudentId ? ` • ${safeStudentId}` : ''}</span>
                   <span class="account-email">${safeEmail}</span>
                 </button>`;
               })
@@ -1025,7 +1025,7 @@ app.get('/dev', (req, res) => {
         <section class="card">
           <h2>Staff record viewer</h2>
           <p class="helper">Staff accounts can use the student record viewer to print student grades and details without editing rights.</p>
-          <button type="button" class="button-secondary" onclick="window.location='/staff'">Open staff viewer</button>
+          <button type="button" class="button-secondary" onclick="window.location.href='/staff'">Open staff viewer</button>
         </section>
 
         <div id="accountModal" class="modal-backdrop" data-modal="accountModal">
@@ -1231,7 +1231,7 @@ app.get('/staff', (req, res) => {
           <div>
             <div class="brand">${safeName}</div>
             <p class="subtitle">${safeEmail}</p>
-            <p class="subtitle"><strong>Course:</strong> ${safeGradeLevel} � <strong>Year level:</strong> ${safeYearLevel}</p>
+            <p class="subtitle"><strong>Course:</strong> ${safeGradeLevel} • <strong>Year level:</strong> ${safeYearLevel}</p>
           </div>
         </div>
         <div class="student-content">
