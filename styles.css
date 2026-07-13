@@ -70,6 +70,13 @@ body {
   align-items: center;
   gap: 20px;
   flex: 1 1 420px;
+  min-width: 0;
+}
+.brand-row > div {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 .logo-img {
   width: 180px;
@@ -77,21 +84,26 @@ body {
   border-radius: 50%;
   background: rgba(37, 99, 235, 0.08);
   border: 2px solid rgba(37, 99, 235, 0.2);
-  padding: 10px;
-  object-fit: contain;
+  padding: 0;
+  object-fit: cover;
   flex-shrink: 0;
   box-shadow: 0 12px 30px rgba(37, 99, 235, 0.14);
+  display: block;
 }
 .brand {
+  margin: 0;
   font-size: clamp(1.9rem, 2.5vw, 2.5rem);
   font-weight: 800;
   letter-spacing: -0.04em;
+  line-height: 1.1;
+  overflow-wrap: anywhere;
 }
 .subtitle {
   margin: 0;
   color: var(--muted);
   line-height: 1.75;
   max-width: 760px;
+  overflow-wrap: anywhere;
 }
 .page-actions {
   display: flex;
@@ -139,6 +151,7 @@ body {
 .form-card {
   max-width: 560px;
   margin: 0 auto;
+  padding: 32px 34px;
 }
 .card {
   background: var(--surface);
@@ -155,6 +168,11 @@ body {
   display: grid;
   gap: 10px;
 }
+.field-block label {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+}
 label {
   font-size: 0.95rem;
   font-weight: 700;
@@ -165,10 +183,11 @@ select {
   width: 100%;
   border-radius: 18px;
   border: 1px solid var(--border);
-  padding: 16px 18px;
+  padding: 14px 16px;
   background: var(--surface-soft);
   color: var(--text);
   font-size: 1rem;
+  min-height: 48px;
 }
 input::placeholder {
   color: var(--muted);
@@ -181,9 +200,9 @@ select:focus {
 }
 button {
   border-radius: 18px;
-  padding: 14px 18px;
+  padding: 13px 16px;
   font-weight: 700;
-  transition: transform 0.18s ease, filter 0.18s ease, background 0.18s ease;
+  transition: transform 0.18s ease, filter 0.18s ease, background 0.18s ease, box-shadow 0.18s ease;
 }
 .button-primary {
   background: linear-gradient(135deg, var(--accent), var(--accent-strong));
@@ -201,6 +220,7 @@ button {
   background: var(--surface-soft);
   color: var(--text);
   border: 1px solid var(--border);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.55);
 }
 .theme-toggle-button:hover,
 .tip-button:hover,
@@ -326,6 +346,9 @@ body.fixed-action-page .page-shell {
   .page-actions .tip-button {
     width: 100%;
   }
+  .field-block {
+    gap: 8px;
+  }
   body.fixed-action-page .theme-toggle-button,
   body.fixed-action-page .tip-button {
     position: static;
@@ -376,12 +399,13 @@ body.fixed-action-page .page-shell {
   outline-offset: 3px;
 }
 .helper {
-  margin: 0 0 16px;
+  margin: 0 0 18px;
   color: var(--muted);
-  line-height: 1.75;
+  line-height: 1.8;
+  font-size: 0.98rem;
 }
 .link-row {
-  margin-top: 16px;
+  margin-top: 18px;
   text-align: center;
   font-size: 0.96rem;
   color: var(--muted);
@@ -526,6 +550,9 @@ body.fixed-action-page .page-shell {
   display: block;
 }
 @media (max-width: 980px) {
+  .page-shell {
+    padding: 20px 16px 40px;
+  }
   .dashboard-grid,
   .admin-grid {
     grid-template-columns: 1fr;
@@ -599,11 +626,22 @@ body.fixed-action-page .page-shell {
   .dev-left-header {
     flex-direction: column;
     align-items: stretch;
+    padding: 20px 18px;
+  }
+  .dev-left-header .brand-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+  }
+  .dev-left-header .brand-row .logo-img {
+    width: 132px;
+    height: 140px;
   }
   .dev-left-header .page-actions {
     flex-direction: column;
     align-items: stretch;
     gap: 12px;
+    width: 100%;
   }
   .dev-left-header .page-actions button,
   .dev-left-header .page-actions .button-logout {
@@ -630,6 +668,7 @@ body.fixed-action-page .page-shell {
 .dev-left-header .brand-row {
   min-width: 0;
   flex: 1 1 320px;
+  align-items: flex-start;
 }
 .dev-left-header .page-actions {
   justify-content: flex-start;
@@ -673,20 +712,25 @@ body.fixed-action-page .page-shell {
   cursor: pointer;
   display: grid;
   gap: 6px;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
 }
 .account-entry:hover {
   background: var(--surface-strong);
+  transform: translateY(-1px);
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
 }
 .account-entry[data-hidden="true"] {
   display: none;
 }
 .account-title {
   font-weight: 700;
+  overflow-wrap: anywhere;
 }
 .account-meta,
 .account-email {
   color: var(--muted);
   font-size: 0.95rem;
+  overflow-wrap: anywhere;
 }
 .student-card {
   padding: 24px;
@@ -998,6 +1042,9 @@ tbody tr:hover {
   .modal-card {
     padding: 22px;
   }
+  .form-card {
+    padding: 22px 20px;
+  }
   .page-actions {
     justify-content: center;
     flex-direction: column;
@@ -1055,6 +1102,7 @@ tbody tr:hover {
     width: 100%;
   }
 }
+@media (max-width: 360px) {
   .page-shell {
     padding: 18px 14px 28px;
   }
@@ -1065,7 +1113,7 @@ tbody tr:hover {
     padding: 18px;
   }
   .brand {
-    font-size: 2rem;
+    font-size: 1.9rem;
   }
   .subtitle {
     font-size: 0.95rem;
@@ -1073,6 +1121,7 @@ tbody tr:hover {
   }
   .field-block {
     gap: 8px;
+  }
   }
   input,
   select,

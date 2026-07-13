@@ -24,7 +24,10 @@ function closeModal(id) {
   const modal = document.getElementById(id);
   if (!modal) return;
   modal.classList.remove('visible');
-  document.body.classList.remove('no-scroll');
+  const hasVisibleModal = document.querySelector('.modal-backdrop.visible');
+  if (!hasVisibleModal) {
+    document.body.classList.remove('no-scroll');
+  }
 }
 
 function toggleDevPanelMenu() {
@@ -106,6 +109,9 @@ function showPageStatusMessage(message, type = 'error') {
   statusMessage.classList.remove('success', 'error');
   statusMessage.classList.add(type === 'success' ? 'success' : 'error');
   statusMessage.style.display = message ? 'block' : 'none';
+  if (message) {
+    statusMessage.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
 }
 
 function handlePageErrorsFromQuery() {
