@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 const express = require('express');
 const session = require('express-session');
 const path = require('path');
@@ -65,11 +67,11 @@ function consumeOtp(email, otp) {
 function getSmtpConfig() {
   const provider = String(process.env.SMTP_PROVIDER || process.env.SMTP_SERVICE || '').toLowerCase();
   const host = process.env.SMTP_HOST || (provider === 'outlook' ? 'smtp-mail.outlook.com' : provider === 'gmail' ? 'smtp.gmail.com' : '');
-  const port = Number(process.env.SMTP_PORT || (provider === 'outlook' ? 587 : 587));
+  const port = Number(process.env.SMTP_PORT || 587);
   const secure = String(process.env.SMTP_SECURE || 'false').toLowerCase() === 'true';
   const user = process.env.SMTP_USER || process.env.SMTP_EMAIL || process.env.SENDER_EMAIL;
   const pass = process.env.SMTP_PASS || process.env.SMTP_PASSWORD || process.env.SENDER_PASSWORD;
-  const from = process.env.SMTP_FROM || user;
+  const from = process.env.SMTP_FROM || user || 'portal@localhost';
 
   return { host, port, secure, user, pass, from, provider };
 }
@@ -77,18 +79,23 @@ function getSmtpConfig() {
 async function sendOtpEmail(email, otp) {
   const { host, port, secure, user, pass, from } = getSmtpConfig();
 
-  if (!user || !pass) {
-    return { ok: false, error: 'SMTP credentials are not configured.' };
+  if (!host || !user || !pass) {
+    return { ok: false, error: 'SMTP host, username, or password is missing.' };
   }
 
   const transport = nodemailer.createTransport({
     host,
     port,
     secure,
-    auth: { user, pass }
+    auth: { user, pass },
+    requireTLS: true,
+    connectionTimeout: 15000,
+    greetingTimeout: 10000,
+    socketTimeout: 20000
   });
 
   try {
+    await transport.verify();
     await transport.sendMail({
       from,
       to: email,
@@ -100,6 +107,8 @@ async function sendOtpEmail(email, otp) {
   } catch (error) {
     console.error(`OTP email delivery failed for ${email}:`, error);
     return { ok: false, error: error.message || 'Unknown mail delivery error.' };
+  } finally {
+    await transport.close();
   }
 }
 

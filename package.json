@@ -8,7 +8,10 @@
     "postinstall": "npm rebuild sqlite3 --build-from-source --unsafe-perm"
   },
   "dependencies": {
+    "dotenv": "^17.4.2",
     "express": "^4.18.4",
-    "express-session": "^1.17.4",    "nodemailer": "^6.9.4",    "sqlite3": "^6.0.1"
+    "express-session": "^1.17.4",
+    "nodemailer": "^6.9.4",
+    "sqlite3": "^6.0.1"
   }
 }
