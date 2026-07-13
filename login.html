@@ -4,15 +4,15 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Portal Grading System - Login</title>
-  <link rel="icon" type="image/png" href="/TFVC-CLG_Logo.png" />
-  <link rel="shortcut icon" type="image/png" href="/TFVC-CLG_Logo.png" />
+  <link rel="icon" type="image/png" href="/New_logo.png" />
+  <link rel="shortcut icon" type="image/png" href="/New_logo.png" />
   <link rel="stylesheet" href="/styles.css" />
 </head>
 <body class="login-page fixed-action-page">
   <div class="page-shell">
     <div class="page-header">
       <div class="brand-row">
-        <img class="logo-img" src="/TFVC-CLG_Logo.png" alt="TFVC College logo" />
+        <img class="logo-img" src="/New_logo.png" alt="Portal logo" />
         <div>
           <div class="brand">Grading Portal</div>
           <p class="subtitle">Welcome to the Grading Portal of TFVC!</p>
@@ -40,18 +40,6 @@
           <button type="submit" class="button-primary">Login</button>
         </form>
 
-        <div id="otpSection" style="display:none; margin-top:1rem;">
-          <h3>Two-step verification</h3>
-          <p>Enter the 6-digit code sent to your email address.</p>
-          <form id="otpForm" action="/login/otp" method="post">
-            <input type="hidden" id="otpEmail" name="email" />
-            <div class="field-block">
-              <label for="otp">Verification code</label>
-              <input type="text" id="otp" name="otp" inputmode="numeric" autocomplete="one-time-code" placeholder="123456" required />
-            </div>
-            <button type="submit" class="button-primary">Verify code</button>
-          </form>
-        </div>
       </div>
     </div>
   </div>
@@ -81,22 +69,6 @@
     (function() {
       const params = new URLSearchParams(window.location.search);
       const error = params.get('error');
-      const step = params.get('step');
-      const loginForm = document.getElementById('loginForm');
-      const otpSection = document.getElementById('otpSection');
-      const otpEmail = document.getElementById('otpEmail');
-      const helperText = document.querySelector('#otpSection p');
-
-      if (step === 'otp' && otpSection) {
-        if (loginForm) loginForm.style.display = 'none';
-        otpSection.style.display = 'block';
-        if (helperText) {
-          helperText.textContent = 'Enter the 6-digit code sent to your email address. If you do not receive it, check your spam folder or verify the SMTP settings.';
-        }
-        if (otpEmail && params.get('email')) {
-          otpEmail.value = params.get('email');
-        }
-      }
 
       if (!error) return;
 
@@ -106,11 +78,7 @@
       if (messageElement) {
         messageElement.textContent = error === 'invalid-credentials'
           ? 'Invalid credentials. Please check your email and password and try again.'
-          : error === 'invalid-otp'
-            ? 'The verification code was invalid or expired. Please try again.'
-            : error === 'otp-send-failed'
-              ? 'The OTP could not be sent. Please verify the SMTP email settings for this portal.'
-              : 'Login failed due to a server error. Please try again in a moment.';
+          : 'Login failed due to a server error. Please try again in a moment.';
       }
       modal.classList.add('visible');
       document.body.classList.add('no-scroll');

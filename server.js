@@ -3,7 +3,6 @@ require('dotenv').config();
 const express = require('express');
 const session = require('express-session');
 const path = require('path');
-const nodemailer = require('nodemailer');
 const { db, initDb } = require('./lib/db');
 const { hashPassword, verifyPassword, normalizeRole, normalizeEmail, isValidEmailFormat, isValidGmailEmailLocalPart, isValidPassword, isValidName, escapeHtml } = require('./lib/auth');
 const { securityHeaders, forbidSensitiveFiles } = require('./lib/middleware');
@@ -22,8 +21,6 @@ const ACCOUNT_ROLE_LIMITS = {
   staff: 6
 };
 
-const otpStore = new Map();
-
 function logDevEvent(message) {
   const entry = `${new Date().toISOString()} - ${message}`;
   devState.appLogs.unshift(entry);
@@ -37,79 +34,6 @@ function requireDev(req, res, next) {
     return res.status(403).json({ error: 'Forbidden' });
   }
   next();
-}
-
-function generateOtp() {
-  return String(Math.floor(100000 + Math.random() * 900000));
-}
-
-function saveOtp(email, payload) {
-  otpStore.set(email.toLowerCase(), {
-    ...payload,
-    expiresAt: Date.now() + 10 * 60 * 1000
-  });
-}
-
-function consumeOtp(email, otp) {
-  const normalizedEmail = email.toLowerCase();
-  const record = otpStore.get(normalizedEmail);
-  if (!record) {
-    return null;
-  }
-  if (record.otp !== otp || record.expiresAt < Date.now()) {
-    otpStore.delete(normalizedEmail);
-    return null;
-  }
-  otpStore.delete(normalizedEmail);
-  return record;
-}
-
-function getSmtpConfig() {
-  const provider = String(process.env.SMTP_PROVIDER || process.env.SMTP_SERVICE || '').toLowerCase();
-  const host = process.env.SMTP_HOST || (provider === 'outlook' ? 'smtp-mail.outlook.com' : provider === 'gmail' ? 'smtp.gmail.com' : '');
-  const port = Number(process.env.SMTP_PORT || 587);
-  const secure = String(process.env.SMTP_SECURE || 'false').toLowerCase() === 'true';
-  const user = process.env.SMTP_USER || process.env.SMTP_EMAIL || process.env.SENDER_EMAIL;
-  const pass = process.env.SMTP_PASS || process.env.SMTP_PASSWORD || process.env.SENDER_PASSWORD;
-  const from = process.env.SMTP_FROM || user || 'portal@localhost';
-
-  return { host, port, secure, user, pass, from, provider };
-}
-
-async function sendOtpEmail(email, otp) {
-  const { host, port, secure, user, pass, from } = getSmtpConfig();
-
-  if (!host || !user || !pass) {
-    return { ok: false, error: 'SMTP host, username, or password is missing.' };
-  }
-
-  const transport = nodemailer.createTransport({
-    host,
-    port,
-    secure,
-    auth: { user, pass },
-    requireTLS: true,
-    connectionTimeout: 15000,
-    greetingTimeout: 10000,
-    socketTimeout: 20000
-  });
-
-  try {
-    await transport.verify();
-    await transport.sendMail({
-      from,
-      to: email,
-      subject: 'Portal verification code',
-      text: `Your portal verification code is ${otp}. It expires in 10 minutes.`,
-      html: `<p>Your portal verification code is <strong>${otp}</strong>.</p><p>It expires in 10 minutes.</p>`
-    });
-    return { ok: true };
-  } catch (error) {
-    console.error(`OTP email delivery failed for ${email}:`, error);
-    return { ok: false, error: error.message || 'Unknown mail delivery error.' };
-  } finally {
-    await transport.close();
-  }
 }
 
 app.set('trust proxy', 1);
@@ -246,10 +170,9 @@ app.post('/register', (req, res) => {
     return res.redirect('/register.html?error=password-mismatch');
   }
 
-  const twoStepEnabled = req.body.twoStepEnabled === 'on' || req.body.twoStepEnabled === '1' ? 1 : 0;
-  const insert = `INSERT INTO users (name, email, password, gradeLevel, yearLevel, role, studentId, twoStepEnabled) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
+  const insert = `INSERT INTO users (name, email, password, gradeLevel, yearLevel, role, studentId) VALUES (?, ?, ?, ?, ?, ?, ?)`;
   const passwordHash = hashPassword(password);
-  db.run(insert, [name, email, passwordHash, major, year, 'student', studentId || null, twoStepEnabled], function (err) {
+  db.run(insert, [name, email, passwordHash, major, year, 'student', studentId || null], function (err) {
     if (err) {
       if (err.code === 'SQLITE_CONSTRAINT') {
         return res.send('Email already registered. <a href="register.html">Try again</a>');
@@ -261,7 +184,7 @@ app.post('/register', (req, res) => {
       return res.redirect('/admin?status=student-created');
     }
 
-    req.session.user = { id: this.lastID, name, email, gradeLevel: major, yearLevel: year, role: 'student', twoStepEnabled };
+    req.session.user = { id: this.lastID, name, email, gradeLevel: major, yearLevel: year, role: 'student' };
     res.redirect('/dashboard');
   });
 });
@@ -274,7 +197,7 @@ app.post('/login', (req, res) => {
     return res.redirect('/login?error=invalid-credentials');
   }
 
-  attemptLogin(email, password, async (err, user, locked) => {
+  attemptLogin(email, password, (err, user, locked) => {
     if (err) {
       return res.redirect('/login?error=login-failed');
     }
@@ -283,30 +206,6 @@ app.post('/login', (req, res) => {
     }
 
     const normalizedRole = normalizeRole(user.role);
-    if (normalizedRole === 'student' && Number(user.twoStepEnabled) === 1) {
-      const otp = generateOtp();
-      const pendingUser = {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        gradeLevel: user.gradeLevel,
-        yearLevel: user.yearLevel,
-        role: normalizedRole
-      };
-      saveOtp(user.email, { otp, ...pendingUser });
-      const mailResult = await sendOtpEmail(user.email, otp);
-      if (!mailResult.ok) {
-        console.error(`OTP send failed for ${user.email}: ${mailResult.error}`);
-        return res.redirect(`/login?error=otp-send-failed&email=${encodeURIComponent(user.email)}`);
-      }
-
-      req.session.pendingOtp = pendingUser;
-      req.session.save(() => {
-        res.redirect(`/login?step=otp&email=${encodeURIComponent(user.email)}`);
-      });
-      return;
-    }
-
     req.session.regenerate((sessionErr) => {
       if (sessionErr) {
         return res.redirect('/login?error=login-failed');
@@ -332,48 +231,6 @@ app.post('/login', (req, res) => {
       }
       res.redirect('/dashboard');
     });
-  });
-});
-
-app.post('/login/otp', (req, res) => {
-  const email = req.body.email?.toString().trim().toLowerCase();
-  const otp = req.body.otp?.toString().trim();
-  const pendingOtp = req.session.pendingOtp;
-
-  if (!email || !otp || !pendingOtp || pendingOtp.email !== email) {
-    return res.redirect(`/login?step=otp&email=${encodeURIComponent(email || '')}&error=invalid-otp`);
-  }
-
-  const verified = consumeOtp(email, otp);
-  if (!verified) {
-    return res.redirect(`/login?step=otp&email=${encodeURIComponent(email)}&error=invalid-otp`);
-  }
-
-  req.session.regenerate((sessionErr) => {
-    if (sessionErr) {
-      return res.redirect('/login?error=login-failed');
-    }
-    req.session.user = {
-      id: pendingOtp.id,
-      name: pendingOtp.name,
-      email: pendingOtp.email,
-      gradeLevel: pendingOtp.gradeLevel,
-      yearLevel: pendingOtp.yearLevel,
-      role: pendingOtp.role
-    };
-    req.session.admin = req.session.user.role === 'admin';
-    req.session.pendingOtp = null;
-
-    if (req.session.user.role === 'admin') {
-      return res.redirect('/admin');
-    }
-    if (req.session.user.role === 'dev') {
-      return res.redirect('/dev');
-    }
-    if (req.session.user.role === 'staff') {
-      return res.redirect('/staff');
-    }
-    res.redirect('/dashboard');
   });
 });
 
@@ -685,15 +542,15 @@ app.get('/admin', (req, res) => {
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Portal Admin Dashboard</title>
-  <link rel="icon" type="image/png" href="/TFVC-CLG_Logo.png" />
-  <link rel="shortcut icon" type="image/png" href="/TFVC-CLG_Logo.png" />
+  <link rel="icon" type="image/png" href="/New_logo.png" />
+  <link rel="shortcut icon" type="image/png" href="/New_logo.png" />
   <link rel="stylesheet" href="/styles.css" />
 </head>
 <body>
   <div class="page-shell">
     <div class="page-header">
       <div class="brand-row">
-        <img class="logo-img" src="/TFVC-CLG_Logo.png" alt="TFVC College logo" />
+        <img class="logo-img" src="/New_logo.png" alt="Portal logo" />
         <div>
           <div class="brand">Admin Dashboard</div>
           <p class="subtitle">Search students by name or email from the left panel.</p>
@@ -903,8 +760,8 @@ app.get('/dev', (req, res) => {
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Developer Dashboard</title>
-  <link rel="icon" type="image/png" href="/TFVC-CLG_Logo.png" />
-  <link rel="shortcut icon" type="image/png" href="/TFVC-CLG_Logo.png" />
+  <link rel="icon" type="image/png" href="/New_logo.png" />
+  <link rel="shortcut icon" type="image/png" href="/New_logo.png" />
   <link rel="stylesheet" href="/styles.css" />
 </head>
 <body>
@@ -914,7 +771,7 @@ app.get('/dev', (req, res) => {
       <aside class="admin-panel">
         <div class="page-header dev-left-header">
           <div class="brand-row">
-            <img class="logo-img" src="/TFVC-CLG_Logo.png" alt="TFVC College logo" />
+            <img class="logo-img" src="/New_logo.png" alt="Portal logo" />
             <div>
               <div class="brand">Developer Dashboard</div>
               <p class="subtitle">Manage accounts, run dev tools, and inspect portal state from the developer console.</p>
@@ -1324,15 +1181,15 @@ app.get('/dashboard', (req, res) => {
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Portal Grading System - Dashboard</title>
-  <link rel="icon" type="image/png" href="/TFVC-CLG_Logo.png" />
-  <link rel="shortcut icon" type="image/png" href="/TFVC-CLG_Logo.png" />
+  <link rel="icon" type="image/png" href="/New_logo.png" />
+  <link rel="shortcut icon" type="image/png" href="/New_logo.png" />
   <link rel="stylesheet" href="/styles.css" />
 </head>
 <body>
   <div class="page-shell">
     <div class="page-header">
       <div class="brand-row">
-        <img class="logo-img" src="/TFVC-CLG_Logo.png" alt="TFVC College logo" />
+        <img class="logo-img" src="/New_logo.png" alt="Portal logo" />
         <div>
           <div class="brand">Grading Portal</div>
           <p class="subtitle">Welcome back, ${escapeHtml(user.name)}. Your data is loaded from SQLite so this portal remains available after refresh.</p>
