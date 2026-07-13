@@ -1,6 +1,7 @@
 const express = require('express');
 const session = require('express-session');
 const path = require('path');
+const nodemailer = require('nodemailer');
 const { db, initDb } = require('./lib/db');
 const { hashPassword, verifyPassword, normalizeRole, normalizeEmail, isValidEmailFormat, isValidGmailEmailLocalPart, isValidPassword, isValidName, escapeHtml } = require('./lib/auth');
 const { securityHeaders, forbidSensitiveFiles } = require('./lib/middleware');
@@ -19,6 +20,8 @@ const ACCOUNT_ROLE_LIMITS = {
   staff: 6
 };
 
+const otpStore = new Map();
+
 function logDevEvent(message) {
   const entry = `${new Date().toISOString()} - ${message}`;
   devState.appLogs.unshift(entry);
@@ -32,6 +35,60 @@ function requireDev(req, res, next) {
     return res.status(403).json({ error: 'Forbidden' });
   }
   next();
+}
+
+function generateOtp() {
+  return String(Math.floor(100000 + Math.random() * 900000));
+}
+
+function saveOtp(email, payload) {
+  otpStore.set(email.toLowerCase(), {
+    ...payload,
+    expiresAt: Date.now() + 10 * 60 * 1000
+  });
+}
+
+function consumeOtp(email, otp) {
+  const normalizedEmail = email.toLowerCase();
+  const record = otpStore.get(normalizedEmail);
+  if (!record) {
+    return null;
+  }
+  if (record.otp !== otp || record.expiresAt < Date.now()) {
+    otpStore.delete(normalizedEmail);
+    return null;
+  }
+  otpStore.delete(normalizedEmail);
+  return record;
+}
+
+async function sendOtpEmail(email, otp) {
+  const host = process.env.SMTP_HOST || 'smtp.gmail.com';
+  const port = Number(process.env.SMTP_PORT || 587);
+  const secure = String(process.env.SMTP_SECURE || 'false').toLowerCase() === 'true';
+  const user = process.env.SMTP_USER || process.env.SMTP_EMAIL || process.env.SENDER_EMAIL;
+  const pass = process.env.SMTP_PASS || process.env.SMTP_PASSWORD || process.env.SENDER_PASSWORD;
+
+  if (!user || !pass) {
+    console.warn(`OTP email skipped for ${email}. SMTP credentials not configured.`);
+    return false;
+  }
+
+  const transport = nodemailer.createTransport({
+    host,
+    port,
+    secure,
+    auth: { user, pass }
+  });
+
+  await transport.sendMail({
+    from: user,
+    to: email,
+    subject: 'Portal verification code',
+    text: `Your portal verification code is ${otp}. It expires in 10 minutes.`,
+    html: `<p>Your portal verification code is <strong>${otp}</strong>.</p><p>It expires in 10 minutes.</p>`
+  });
+  return true;
 }
 
 app.set('trust proxy', 1);
@@ -168,9 +225,10 @@ app.post('/register', (req, res) => {
     return res.redirect('/register.html?error=password-mismatch');
   }
 
-  const insert = `INSERT INTO users (name, email, password, gradeLevel, yearLevel, role, studentId) VALUES (?, ?, ?, ?, ?, ?, ?)`;
+  const twoStepEnabled = req.body.twoStepEnabled === 'on' || req.body.twoStepEnabled === '1' ? 1 : 0;
+  const insert = `INSERT INTO users (name, email, password, gradeLevel, yearLevel, role, studentId, twoStepEnabled) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
   const passwordHash = hashPassword(password);
-  db.run(insert, [name, email, passwordHash, major, year, 'student', studentId || null], function (err) {
+  db.run(insert, [name, email, passwordHash, major, year, 'student', studentId || null, twoStepEnabled], function (err) {
     if (err) {
       if (err.code === 'SQLITE_CONSTRAINT') {
         return res.send('Email already registered. <a href="register.html">Try again</a>');
@@ -182,7 +240,7 @@ app.post('/register', (req, res) => {
       return res.redirect('/admin?status=student-created');
     }
 
-    req.session.user = { id: this.lastID, name, email, gradeLevel: major, yearLevel: year, role: 'student' };
+    req.session.user = { id: this.lastID, name, email, gradeLevel: major, yearLevel: year, role: 'student', twoStepEnabled };
     res.redirect('/dashboard');
   });
 });
@@ -195,12 +253,37 @@ app.post('/login', (req, res) => {
     return res.redirect('/login?error=invalid-credentials');
   }
 
-  attemptLogin(email, password, (err, user, locked) => {
+  attemptLogin(email, password, async (err, user, locked) => {
     if (err) {
       return res.redirect('/login?error=login-failed');
     }
     if (!user) {
       return res.redirect(locked ? '/login?error=account-locked' : '/login?error=invalid-credentials');
+    }
+
+    const normalizedRole = normalizeRole(user.role);
+    if (normalizedRole === 'student' && Number(user.twoStepEnabled) === 1) {
+      const otp = generateOtp();
+      const pendingUser = {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        gradeLevel: user.gradeLevel,
+        yearLevel: user.yearLevel,
+        role: normalizedRole
+      };
+      saveOtp(user.email, { otp, ...pendingUser });
+      try {
+        await sendOtpEmail(user.email, otp);
+      } catch (mailError) {
+        console.error('Unable to send OTP email:', mailError);
+      }
+
+      req.session.pendingOtp = pendingUser;
+      req.session.save(() => {
+        res.redirect(`/login?step=otp&email=${encodeURIComponent(user.email)}`);
+      });
+      return;
     }
 
     req.session.regenerate((sessionErr) => {
@@ -213,7 +296,7 @@ app.post('/login', (req, res) => {
         email: user.email,
         gradeLevel: user.gradeLevel,
         yearLevel: user.yearLevel,
-        role: normalizeRole(user.role)
+        role: normalizedRole
       };
       req.session.admin = req.session.user.role === 'admin';
 
@@ -228,6 +311,48 @@ app.post('/login', (req, res) => {
       }
       res.redirect('/dashboard');
     });
+  });
+});
+
+app.post('/login/otp', (req, res) => {
+  const email = req.body.email?.toString().trim().toLowerCase();
+  const otp = req.body.otp?.toString().trim();
+  const pendingOtp = req.session.pendingOtp;
+
+  if (!email || !otp || !pendingOtp || pendingOtp.email !== email) {
+    return res.redirect(`/login?step=otp&email=${encodeURIComponent(email || '')}&error=invalid-otp`);
+  }
+
+  const verified = consumeOtp(email, otp);
+  if (!verified) {
+    return res.redirect(`/login?step=otp&email=${encodeURIComponent(email)}&error=invalid-otp`);
+  }
+
+  req.session.regenerate((sessionErr) => {
+    if (sessionErr) {
+      return res.redirect('/login?error=login-failed');
+    }
+    req.session.user = {
+      id: pendingOtp.id,
+      name: pendingOtp.name,
+      email: pendingOtp.email,
+      gradeLevel: pendingOtp.gradeLevel,
+      yearLevel: pendingOtp.yearLevel,
+      role: pendingOtp.role
+    };
+    req.session.admin = req.session.user.role === 'admin';
+    req.session.pendingOtp = null;
+
+    if (req.session.user.role === 'admin') {
+      return res.redirect('/admin');
+    }
+    if (req.session.user.role === 'dev') {
+      return res.redirect('/dev');
+    }
+    if (req.session.user.role === 'staff') {
+      return res.redirect('/staff');
+    }
+    res.redirect('/dashboard');
   });
 });
 
@@ -813,8 +938,8 @@ app.get('/dev', (req, res) => {
             <label for="sortOrder">Sort by</label>
             <select id="sortOrder">
               <option value="">Default order</option>
-              <option value="name-asc">Name — A to Z</option>
-              <option value="name-desc">Name — Z to A</option>
+              <option value="name-asc">Name ï¿½ A to Z</option>
+              <option value="name-desc">Name ï¿½ Z to A</option>
               <option value="role">Role</option>
               <option value="year">Year level</option>
             </select>
@@ -877,7 +1002,7 @@ app.get('/dev', (req, res) => {
                 const safeStudentId = escapeHtml(user.studentId || '');
                 return `<button type="button" class="account-entry" data-user-id="${user.id}" data-name="${safeName}" data-email="${safeEmail}" data-role="${safeRole}" data-grade-level="${safeGradeLevel}" data-year-level="${safeYearLevel}" data-student-id="${safeStudentId}">
                   <span class="account-title">${safeName}</span>
-                  <span class="account-meta">${safeRole}${safeStudentId ? ` • ${safeStudentId}` : ''}</span>
+                  <span class="account-meta">${safeRole}${safeStudentId ? ` ï¿½ ${safeStudentId}` : ''}</span>
                   <span class="account-email">${safeEmail}</span>
                 </button>`;
               })
@@ -1094,7 +1219,7 @@ app.get('/staff', (req, res) => {
           <div>
             <div class="brand">${safeName}</div>
             <p class="subtitle">${safeEmail}</p>
-            <p class="subtitle"><strong>Course:</strong> ${safeGradeLevel} • <strong>Year level:</strong> ${safeYearLevel}</p>
+            <p class="subtitle"><strong>Course:</strong> ${safeGradeLevel} ï¿½ <strong>Year level:</strong> ${safeYearLevel}</p>
           </div>
         </div>
         <div class="student-content">

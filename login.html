@@ -39,6 +39,19 @@
           </div>
           <button type="submit" class="button-primary">Login</button>
         </form>
+
+        <div id="otpSection" style="display:none; margin-top:1rem;">
+          <h3>Two-step verification</h3>
+          <p>Enter the 6-digit code sent to your email address.</p>
+          <form id="otpForm" action="/login/otp" method="post">
+            <input type="hidden" id="otpEmail" name="email" />
+            <div class="field-block">
+              <label for="otp">Verification code</label>
+              <input type="text" id="otp" name="otp" inputmode="numeric" autocomplete="one-time-code" placeholder="123456" required />
+            </div>
+            <button type="submit" class="button-primary">Verify code</button>
+          </form>
+        </div>
       </div>
     </div>
   </div>
@@ -68,6 +81,19 @@
     (function() {
       const params = new URLSearchParams(window.location.search);
       const error = params.get('error');
+      const step = params.get('step');
+      const loginForm = document.getElementById('loginForm');
+      const otpSection = document.getElementById('otpSection');
+      const otpEmail = document.getElementById('otpEmail');
+
+      if (step === 'otp' && otpSection) {
+        if (loginForm) loginForm.style.display = 'none';
+        otpSection.style.display = 'block';
+        if (otpEmail && params.get('email')) {
+          otpEmail.value = params.get('email');
+        }
+      }
+
       if (!error) return;
 
       const modal = document.getElementById('loginErrorModal');
@@ -76,7 +102,9 @@
       if (messageElement) {
         messageElement.textContent = error === 'invalid-credentials'
           ? 'Invalid credentials. Please check your email and password and try again.'
-          : 'Login failed due to a server error. Please try again in a moment.';
+          : error === 'invalid-otp'
+            ? 'The verification code was invalid or expired. Please try again.'
+            : 'Login failed due to a server error. Please try again in a moment.';
       }
       modal.classList.add('visible');
       document.body.classList.add('no-scroll');
