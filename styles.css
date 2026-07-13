@@ -74,11 +74,13 @@ body {
 .logo-img {
   width: 180px;
   height: 190px;
-  border-radius: 22px;
+  border-radius: 50%;
   background: rgba(37, 99, 235, 0.08);
-  border: 1px solid rgba(37, 99, 235, 0.12);
-  padding: 8px;
+  border: 2px solid rgba(37, 99, 235, 0.2);
+  padding: 10px;
   object-fit: contain;
+  flex-shrink: 0;
+  box-shadow: 0 12px 30px rgba(37, 99, 235, 0.14);
 }
 .brand {
   font-size: clamp(1.9rem, 2.5vw, 2.5rem);
@@ -595,7 +597,8 @@ body.fixed-action-page .page-shell {
     min-width: auto;
   }
   .dev-left-header {
-    grid-template-columns: 1fr;
+    flex-direction: column;
+    align-items: stretch;
   }
   .dev-left-header .page-actions {
     flex-direction: column;
@@ -612,7 +615,10 @@ body.fixed-action-page .page-shell {
   top: 20px;
 }
 .dev-left-header {
-  display: grid;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
   gap: 20px;
   padding: 24px 28px;
   margin-bottom: 18px;
@@ -621,9 +627,14 @@ body.fixed-action-page .page-shell {
   border: 1px solid var(--border);
   box-shadow: var(--shadow);
 }
+.dev-left-header .brand-row {
+  min-width: 0;
+  flex: 1 1 320px;
+}
 .dev-left-header .page-actions {
   justify-content: flex-start;
   gap: 10px;
+  flex-wrap: wrap;
 }
 .dev-left-header .page-actions button,
 .dev-left-header .page-actions .button-logout {
