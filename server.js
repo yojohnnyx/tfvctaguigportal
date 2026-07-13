@@ -62,16 +62,23 @@ function consumeOtp(email, otp) {
   return record;
 }
 
-async function sendOtpEmail(email, otp) {
-  const host = process.env.SMTP_HOST || 'smtp.gmail.com';
-  const port = Number(process.env.SMTP_PORT || 587);
+function getSmtpConfig() {
+  const provider = String(process.env.SMTP_PROVIDER || process.env.SMTP_SERVICE || '').toLowerCase();
+  const host = process.env.SMTP_HOST || (provider === 'outlook' ? 'smtp-mail.outlook.com' : provider === 'gmail' ? 'smtp.gmail.com' : '');
+  const port = Number(process.env.SMTP_PORT || (provider === 'outlook' ? 587 : 587));
   const secure = String(process.env.SMTP_SECURE || 'false').toLowerCase() === 'true';
   const user = process.env.SMTP_USER || process.env.SMTP_EMAIL || process.env.SENDER_EMAIL;
   const pass = process.env.SMTP_PASS || process.env.SMTP_PASSWORD || process.env.SENDER_PASSWORD;
+  const from = process.env.SMTP_FROM || user;
+
+  return { host, port, secure, user, pass, from, provider };
+}
+
+async function sendOtpEmail(email, otp) {
+  const { host, port, secure, user, pass, from } = getSmtpConfig();
 
   if (!user || !pass) {
-    console.warn(`OTP email skipped for ${email}. SMTP credentials not configured.`);
-    return false;
+    return { ok: false, error: 'SMTP credentials are not configured.' };
   }
 
   const transport = nodemailer.createTransport({
@@ -81,14 +88,19 @@ async function sendOtpEmail(email, otp) {
     auth: { user, pass }
   });
 
-  await transport.sendMail({
-    from: user,
-    to: email,
-    subject: 'Portal verification code',
-    text: `Your portal verification code is ${otp}. It expires in 10 minutes.`,
-    html: `<p>Your portal verification code is <strong>${otp}</strong>.</p><p>It expires in 10 minutes.</p>`
-  });
-  return true;
+  try {
+    await transport.sendMail({
+      from,
+      to: email,
+      subject: 'Portal verification code',
+      text: `Your portal verification code is ${otp}. It expires in 10 minutes.`,
+      html: `<p>Your portal verification code is <strong>${otp}</strong>.</p><p>It expires in 10 minutes.</p>`
+    });
+    return { ok: true };
+  } catch (error) {
+    console.error(`OTP email delivery failed for ${email}:`, error);
+    return { ok: false, error: error.message || 'Unknown mail delivery error.' };
+  }
 }
 
 app.set('trust proxy', 1);
@@ -273,10 +285,10 @@ app.post('/login', (req, res) => {
         role: normalizedRole
       };
       saveOtp(user.email, { otp, ...pendingUser });
-      try {
-        await sendOtpEmail(user.email, otp);
-      } catch (mailError) {
-        console.error('Unable to send OTP email:', mailError);
+      const mailResult = await sendOtpEmail(user.email, otp);
+      if (!mailResult.ok) {
+        console.error(`OTP send failed for ${user.email}: ${mailResult.error}`);
+        return res.redirect(`/login?error=otp-send-failed&email=${encodeURIComponent(user.email)}`);
       }
 
       req.session.pendingOtp = pendingUser;
