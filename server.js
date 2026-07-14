@@ -216,7 +216,8 @@ app.post('/login', (req, res) => {
         email: user.email,
         gradeLevel: user.gradeLevel,
         yearLevel: user.yearLevel,
-        role: normalizedRole
+        role: normalizedRole,
+        profilePicture: user.profilePicture || null
       };
       req.session.admin = req.session.user.role === 'admin';
 
@@ -611,13 +612,21 @@ app.get('/admin', (req, res) => {
         const safeGradeLevel = escapeHtml(user.gradeLevel || 'Unknown major');
         const safeYearLevel = escapeHtml(user.yearLevel || 'Unspecified year');
         const userSubjectList = (gradesByUser[user.id] || []).map((grade) => escapeHtml(grade.subject)).filter(Boolean).join(', ');
+        const profileMarkup = user.profilePicture
+          ? `<img class="profile-photo" src="${escapeHtml(user.profilePicture)}" alt="${safeName} profile picture" />`
+          : `<div class="profile-photo-placeholder">${escapeHtml((user.name || 'U').charAt(0).toUpperCase())}</div>`;
         html += `
       <section class="card student-card" data-user-id="${user.id}" data-name="${escapeHtml((user.name + ' ' + (user.studentId || '') + ' ' + (user.gradeLevel || '')).toLowerCase())}" data-grade-level="${escapeHtml((user.gradeLevel || '').toLowerCase())}" data-year-level="${escapeHtml((user.yearLevel || '').toLowerCase())}" data-student-id="${escapeHtml((user.studentId || '').toLowerCase())}">
         <button type="button" class="student-card-button" data-user-id="${user.id}">
-          <div class="student-card-title">${safeName}</div>
-          <div class="student-card-meta">
-            <span>${escapeHtml(user.studentId || 'No ID')}</span>
-            <span>${safeGradeLevel}</span>
+          <div class="student-card-header">
+            <div class="profile-photo-shell" data-user-id="${user.id}">${profileMarkup}</div>
+            <div>
+              <div class="student-card-title">${safeName}</div>
+              <div class="student-card-meta">
+                <span>${escapeHtml(user.studentId || 'No ID')}</span>
+                <span>${safeGradeLevel}</span>
+              </div>
+            </div>
           </div>
         </button>
       </section>
@@ -690,6 +699,7 @@ app.get('/admin', (req, res) => {
       studentId: user.studentId || '',
       major: user.gradeLevel || 'Unknown major',
       yearLevel: user.yearLevel || 'Unspecified year',
+      profilePicture: user.profilePicture || '',
       grades: (gradesByUser[user.id] || []).map((grade) => ({ id: grade.id, subject: grade.subject, grade: grade.grade }))
     }))).replace(/</g, '\u003c')};
   </script>
@@ -878,10 +888,18 @@ app.get('/dev', (req, res) => {
                 const safeGradeLevel = escapeHtml(user.gradeLevel || '');
                 const safeYearLevel = escapeHtml(user.yearLevel || '');
                 const safeStudentId = escapeHtml(user.studentId || '');
+                const profileMarkup = user.profilePicture
+                  ? `<img class="profile-photo" src="${escapeHtml(user.profilePicture)}" alt="${safeName} profile picture" />`
+                  : `<div class="profile-photo-placeholder">${escapeHtml((user.name || 'U').charAt(0).toUpperCase())}</div>`;
                 return `<button type="button" class="account-entry" data-user-id="${user.id}" data-name="${safeName}" data-email="${safeEmail}" data-role="${safeRole}" data-grade-level="${safeGradeLevel}" data-year-level="${safeYearLevel}" data-student-id="${safeStudentId}">
-                  <span class="account-title">${safeName}</span>
-                  <span class="account-meta">${safeRole}${safeStudentId ? ` • ${safeStudentId}` : ''}</span>
-                  <span class="account-email">${safeEmail}</span>
+                  <div class="account-entry-top">
+                    <div class="profile-photo-shell" data-user-id="${user.id}">${profileMarkup}</div>
+                    <div class="account-entry-details">
+                      <span class="account-title">${safeName}</span>
+                      <span class="account-meta">${safeRole}${safeStudentId ? ` • ${safeStudentId}` : ''}</span>
+                      <span class="account-email">${safeEmail}</span>
+                    </div>
+                  </div>
                 </button>`;
               })
               .join('')}
@@ -1157,25 +1175,72 @@ app.post('/dev/delete-user', requireDev, (req, res) => {
   });
 });
 
+app.post('/student/profile-picture', (req, res) => {
+  const user = req.session.user;
+  if (!user || normalizeRole(user.role) !== 'student') {
+    return res.status(403).json({ error: 'Only student accounts can update a profile picture.' });
+  }
+
+  const profilePicture = typeof req.body.profilePicture === 'string' ? req.body.profilePicture.trim() : '';
+  const isValidImage = /^data:image\/(png|jpeg|jpg|gif|webp);base64,/.test(profilePicture);
+  if (!profilePicture || !isValidImage) {
+    return res.status(400).json({ error: 'Please choose a valid image file.' });
+  }
+
+  db.run('UPDATE users SET profilePicture = ? WHERE id = ?', [profilePicture, user.id], (err) => {
+    if (err) {
+      return res.status(500).json({ error: 'Unable to save your profile picture.' });
+    }
+
+    req.session.user.profilePicture = profilePicture;
+    res.json({ message: 'Profile picture updated.', profilePicture });
+  });
+});
+
+app.get('/api/profile-photos', (req, res) => {
+  const user = req.session.user;
+  if (!user) {
+    return res.status(401).json({ error: 'Unauthorized.' });
+  }
+
+  db.all('SELECT id, profilePicture FROM users ORDER BY id', [], (err, rows) => {
+    if (err) {
+      return res.status(500).json({ error: 'Unable to load profile photos.' });
+    }
+
+    res.json({ profiles: rows || [] });
+  });
+});
+
 app.get('/dashboard', (req, res) => {
   const user = req.session.user;
   if (!user) {
     return res.redirect('/login.html');
   }
 
-  db.all('SELECT * FROM grades WHERE userId = ?', [user.id], (err, grades) => {
-    if (err) {
-      return res.send('Unable to load grade data. <a href="/dashboard">Back</a>');
+  db.get('SELECT * FROM users WHERE id = ?', [user.id], (userErr, profileUser) => {
+    if (userErr || !profileUser) {
+      return res.send('Unable to load profile data. <a href="/dashboard">Back</a>');
     }
 
-    const numericGrades = grades
-      .map((grade) => parseFloat(grade.grade))
-      .filter((value) => !Number.isNaN(value));
-    const gwa = numericGrades.length
-      ? Math.round((numericGrades.reduce((sum, value) => sum + value, 0) / numericGrades.length) * 100) / 100
-      : 'N/A';
+    const studentProfile = profileUser.profilePicture || '';
+    const profilePreviewMarkup = studentProfile
+      ? `<img class="profile-photo profile-photo-large" src="${escapeHtml(studentProfile)}" alt="${escapeHtml(profileUser.name)} profile picture" />`
+      : `<div class="profile-photo-placeholder profile-photo-placeholder-large">${escapeHtml((profileUser.name || 'U').charAt(0).toUpperCase())}</div>`;
 
-    const html = `<!DOCTYPE html>
+    db.all('SELECT * FROM grades WHERE userId = ?', [user.id], (err, grades) => {
+      if (err) {
+        return res.send('Unable to load grade data. <a href="/dashboard">Back</a>');
+      }
+
+      const numericGrades = grades
+        .map((grade) => parseFloat(grade.grade))
+        .filter((value) => !Number.isNaN(value));
+      const gwa = numericGrades.length
+        ? Math.round((numericGrades.reduce((sum, value) => sum + value, 0) / numericGrades.length) * 100) / 100
+        : 'N/A';
+
+      const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -1206,6 +1271,25 @@ app.get('/dashboard', (req, res) => {
       <section class="card">
         <div class="brand">Hello, ${escapeHtml(user.name)}</div>
         <p class="subtitle">Review your current progress, course standing, and performance summary below.</p>
+      </section>
+
+      <section class="card profile-settings-card">
+        <div class="profile-settings-header">
+          <div>
+            <h2>Student settings</h2>
+            <p class="helper">Upload a profile picture and admins or devs will see it as soon as it is saved.</p>
+          </div>
+        </div>
+        <div class="profile-settings-body">
+          <div class="profile-photo-shell profile-photo-shell-large" id="studentProfilePreviewShell" data-user-id="${profileUser.id}">
+            ${profilePreviewMarkup}
+          </div>
+          <form id="studentProfileForm" class="profile-settings-form">
+            <label class="profile-upload-label" for="studentProfilePictureInput">Choose a new picture</label>
+            <input type="file" id="studentProfilePictureInput" accept="image/*" />
+            <div id="studentProfileStatus" class="profile-status">PNG, JPG, GIF, or WEBP files are supported.</div>
+          </form>
+        </div>
       </section>
 
       <section class="stats-grid">
@@ -1267,7 +1351,8 @@ ${grades.length === 0 ? '              <tr><td colspan="4">No grades recorded ye
 </body>
 </html>`;
 
-    res.send(html);
+      res.send(html);
+    });
   });
 });
 

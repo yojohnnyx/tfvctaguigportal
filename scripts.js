@@ -114,6 +114,80 @@ function showPageStatusMessage(message, type = 'error') {
   }
 }
 
+function renderProfileShell(shell, profilePicture, name) {
+  if (!shell) return;
+  const safeName = String(name || 'User').charAt(0).toUpperCase();
+  if (profilePicture) {
+    shell.innerHTML = `<img class="profile-photo" src="${profilePicture}" alt="${safeName} profile picture" />`;
+    return;
+  }
+  shell.innerHTML = `<div class="profile-photo-placeholder">${safeName}</div>`;
+}
+
+async function refreshProfilePhotos() {
+  const hasProfileShells = document.querySelector('.profile-photo-shell[data-user-id]');
+  if (!hasProfileShells) return;
+
+  try {
+    const response = await fetch('/api/profile-photos');
+    if (!response.ok) return;
+    const result = await response.json();
+    if (!Array.isArray(result.profiles)) return;
+    result.profiles.forEach((entry) => {
+      document.querySelectorAll(`.profile-photo-shell[data-user-id="${entry.id}"]`).forEach((shell) => {
+        renderProfileShell(shell, entry.profilePicture || '', shell.dataset.name || 'User');
+      });
+    });
+  } catch (error) {
+    // Ignore polling failures silently.
+  }
+}
+
+function setupStudentProfileUpload() {
+  const form = document.getElementById('studentProfileForm');
+  const input = document.getElementById('studentProfilePictureInput');
+  const previewShell = document.getElementById('studentProfilePreviewShell');
+  const status = document.getElementById('studentProfileStatus');
+
+  if (!form || !input || !previewShell) return;
+
+  input.addEventListener('change', async () => {
+    const file = input.files && input.files[0];
+    if (!file) return;
+
+    if (status) {
+      status.textContent = 'Uploading picture...';
+    }
+
+    const reader = new FileReader();
+    reader.onload = async () => {
+      const dataUrl = reader.result;
+      try {
+        const response = await fetch('/student/profile-picture', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: new URLSearchParams({ profilePicture: dataUrl })
+        });
+        const result = await response.json().catch(() => ({ error: 'Unable to upload picture.' }));
+        if (!response.ok || result.error) {
+          if (status) status.textContent = result.error || 'Unable to upload picture.';
+          return;
+        }
+
+        renderProfileShell(previewShell, result.profilePicture || '', 'User');
+        document.querySelectorAll('.profile-photo-shell[data-user-id]').forEach((shell) => {
+          renderProfileShell(shell, result.profilePicture || '', shell.dataset.name || 'User');
+        });
+        if (status) status.textContent = 'Profile picture updated.';
+        refreshProfilePhotos();
+      } catch (error) {
+        if (status) status.textContent = 'Unable to upload picture.';
+      }
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
 function handlePageErrorsFromQuery() {
   const params = new URLSearchParams(window.location.search);
   const error = params.get('error');
@@ -147,6 +221,9 @@ function handlePageErrorsFromQuery() {
 window.addEventListener('DOMContentLoaded', () => {
   initTheme();
   handlePageErrorsFromQuery();
+  setupStudentProfileUpload();
+  refreshProfilePhotos();
+  window.setInterval(refreshProfilePhotos, 4000);
 
   document.querySelectorAll('.modal-close').forEach((button) => {
     button.addEventListener('click', () => {
