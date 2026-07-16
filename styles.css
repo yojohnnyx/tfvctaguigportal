@@ -1363,6 +1363,35 @@ tbody tr:hover {
   .stats-grid {
     grid-template-columns: 1fr;
   }
+
+  /* Admin/dev header: stack logo, center title, move actions full width on small screens */
+  .admin-header,
+  .dev-left-header {
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+  .admin-header .brand-row,
+  .dev-left-header .brand-row {
+    flex: 0 0 auto;
+  }
+  .admin-header .brand-center,
+  .dev-left-header .brand-center {
+    order: 2;
+    text-align: center;
+    width: 100%;
+  }
+  .admin-header .page-actions,
+  .dev-left-header .page-actions {
+    order: 3;
+    width: 100%;
+    justify-content: center;
+  }
+  .admin-header .logo-img,
+  .dev-left-header .logo-img {
+    width: 100px;
+    height: 110px;
+  }
 }
 
 @media (max-width: 520px) {
