@@ -222,6 +222,24 @@ window.addEventListener('DOMContentLoaded', () => {
   refreshProfilePhotos();
   window.setInterval(refreshProfilePhotos, 4000);
 
+  // Ensure student navigation exists on pages where server-side rendering may omit it.
+  const ensureStudentNav = () => {
+    if (document.querySelector('student-nav')) return;
+    const dashboard = document.querySelector('.dashboard-wrapper');
+    if (!dashboard) return;
+    const nav = document.createElement('student-nav');
+    const current = window.location.hash ? window.location.pathname + window.location.hash : window.location.pathname;
+    nav.innerHTML = `
+      <a href="/dashboard" class="${current === '/dashboard' ? 'active' : ''}">Home</a>
+      <a href="/dashboard#events" class="${current.includes('#events') ? 'active' : ''}">Event</a>
+      <a href="/dashboard#contact" class="${current.includes('#contact') ? 'active' : ''}">Contact us</a>
+      <a href="/dashboard#settings" class="${current.includes('#settings') ? 'active' : ''}">Settings</a>
+    `;
+    dashboard.parentNode.insertBefore(nav, dashboard);
+  };
+
+  ensureStudentNav();
+
   document.querySelectorAll('.modal-close').forEach((button) => {
     button.addEventListener('click', () => {
       const modal = button.closest('.modal-backdrop');
