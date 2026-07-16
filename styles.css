@@ -72,6 +72,23 @@ body {
   flex: 1 1 420px;
   min-width: 0;
 }
+
+/* For admin and dev layouts keep only the logo on the left and center the page title */
+.admin-header .brand-row,
+.dev-left-header .brand-row {
+  flex: 0 0 auto;
+  gap: 12px;
+}
+.admin-header .brand-center,
+.dev-left-header .brand-center {
+  flex: 1 1 auto;
+  text-align: center;
+}
+.admin-header .brand-center .subtitle,
+.dev-left-header .brand-center .subtitle {
+  margin: 0;
+  color: var(--muted);
+}
 .dev-left-header {
   align-items: center;
 }
@@ -1447,3 +1464,4 @@ tbody tr:hover {
     padding-bottom: 80px;
   }
 
+}
