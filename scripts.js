@@ -224,8 +224,14 @@ window.addEventListener('DOMContentLoaded', () => {
 
   // Ensure student navigation exists on pages where server-side rendering may omit it.
   const ensureStudentNav = () => {
-    const pathname = window.location.pathname.replace(/\/+$/,'');
-    if (pathname !== '/dashboard') return; // only show on the student dashboard
+    // Prefer explicit server-provided role metadata when available
+    const roleMeta = document.querySelector('meta[name="portal-role"]');
+    if (roleMeta) {
+      if (String(roleMeta.content || '').toLowerCase() !== 'student') return;
+    } else {
+      const pathname = window.location.pathname.replace(/\/+$/,'');
+      if (pathname !== '/dashboard') return; // only show on the student dashboard when no meta tag
+    }
     if (document.querySelector('student-nav')) return;
     const dashboard = document.querySelector('.dashboard-wrapper');
     if (!dashboard) return;
