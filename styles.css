@@ -84,6 +84,36 @@ body {
   flex: 1 1 auto;
   text-align: center;
 }
+.dev-account-count {
+  margin-top: 8px;
+  font-weight: 700;
+  color: var(--muted);
+}
+.dev-header-search {
+  margin-top: 10px;
+}
+.dev-header-search input[type="search"] {
+  width: 100%;
+  border-radius: 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  background: var(--surface-soft);
+}
+.brand-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: flex-start;
+}
+.brand-info .brand-meta {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.brand-info .brand-meta .button-secondary {
+  padding: 6px 10px;
+  font-size: 0.95rem;
+}
 .admin-header .brand-center .subtitle,
 .dev-left-header .brand-center .subtitle {
   margin: 0;
