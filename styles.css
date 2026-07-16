@@ -57,7 +57,7 @@ body {
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: center;
   gap: 20px;
   padding: 28px 32px;
   border-radius: 30px;
@@ -71,6 +71,12 @@ body {
   gap: 20px;
   flex: 1 1 420px;
   min-width: 0;
+}
+.dev-left-header {
+  align-items: center;
+}
+.dev-left-header .brand-row {
+  align-items: center;
 }
 .brand-row > div {
   min-width: 0;
@@ -667,9 +673,54 @@ body.fixed-action-page .page-shell {
   font-size: 1.9rem;
   display: block;
 }
+student-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 0 0 18px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+student-nav button,
+student-nav a {
+  border: 1px solid var(--border);
+  background: var(--surface-soft);
+  color: var(--text);
+  text-decoration: none;
+  padding: 10px 14px;
+  border-radius: 999px;
+  font-weight: 700;
+  cursor: pointer;
+}
+student-nav button.active,
+student-nav a.active {
+  background: var(--accent);
+  color: white;
+  border-color: var(--accent);
+}
+
 @media (max-width: 980px) {
   .page-shell {
     padding: 20px 16px 40px;
+  }
+  .page-header {
+    padding: 24px 22px;
+  }
+  .brand-row {
+    flex: 1 1 100%;
+  }
+  .page-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+  student-nav {
+    padding: 10px;
+  }
+  .profile-settings-body {
+    align-items: flex-start;
   }
   .dashboard-grid,
   .admin-grid {
@@ -1244,13 +1295,23 @@ tbody tr:hover {
   .modal-card {
     padding: 22px;
   }
-  .form-card {
-    padding: 22px 20px;
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+  .brand-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    width: 100%;
   }
   .page-actions {
     justify-content: center;
     flex-direction: column;
     align-items: stretch;
+    width: 100%;
+    margin-left: 0;
   }
   .page-actions button,
   .page-actions .button-logout,
@@ -1265,6 +1326,26 @@ tbody tr:hover {
   .button-secondary {
     width: 100%;
   }
+  student-nav {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+  student-nav a {
+    width: 100%;
+    text-align: center;
+  }
+  .profile-settings-body {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .profile-settings-form {
+    width: 100%;
+    min-width: 0;
+  }
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 520px) {
@@ -1276,6 +1357,27 @@ tbody tr:hover {
   .student-meta,
   .student-actions {
     grid-template-columns: 1fr;
+  }
+  .page-header {
+    gap: 14px;
+  }
+  .brand-row {
+    gap: 10px;
+  }
+  .logo-img {
+    width: 110px;
+    height: 116px;
+  }
+  .page-actions {
+    gap: 10px;
+    margin-left: 0;
+  }
+  student-nav {
+    padding: 10px;
+  }
+  student-nav a {
+    padding: 10px 12px;
+    font-size: 0.95rem;
   }
   .student-meta,
   .student-actions {
@@ -1323,7 +1425,6 @@ tbody tr:hover {
   }
   .field-block {
     gap: 8px;
-  }
   }
   input,
   select,
