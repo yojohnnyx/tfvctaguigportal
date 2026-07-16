@@ -404,6 +404,24 @@ body.fixed-action-page .page-shell {
   line-height: 1.8;
   font-size: 0.98rem;
 }
+.demo-card {
+  margin-top: 18px;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 16px;
+  background: var(--surface-soft);
+}
+.demo-card h3 {
+  margin: 0 0 8px;
+  font-size: 1rem;
+}
+.demo-list {
+  margin: 0;
+  padding-left: 18px;
+  display: grid;
+  gap: 6px;
+  color: var(--muted);
+}
 .link-row {
   margin-top: 18px;
   text-align: center;
@@ -492,6 +510,106 @@ body.fixed-action-page .page-shell {
 }
 .panel-card h2 {
   margin-top: 0;
+}
+.landing-grid {
+  display: grid;
+  gap: 22px;
+  grid-template-columns: 1.4fr 1fr 1fr;
+  margin-top: 28px;
+}
+.landing-hero {
+  display: grid;
+  gap: 18px;
+}
+.landing-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.landing-badges span,
+.summary-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(37, 99, 235, 0.1);
+  color: var(--accent);
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+.feature-list {
+  margin: 0;
+  padding-left: 20px;
+  display: grid;
+  gap: 10px;
+  color: var(--muted);
+  line-height: 1.7;
+}
+.report-card {
+  display: grid;
+  gap: 18px;
+}
+.report-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.report-grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+.report-box {
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 16px;
+  background: var(--surface-soft);
+}
+.report-box span {
+  display: block;
+  color: var(--muted);
+  font-size: 0.92rem;
+  margin-bottom: 8px;
+}
+.report-box strong {
+  font-size: 1.1rem;
+}
+@media print {
+  body {
+    background: white;
+    color: black;
+  }
+  .page-shell {
+    padding: 0;
+    width: 100%;
+  }
+  .report-actions,
+  .button-primary {
+    display: none !important;
+  }
+  .card {
+    box-shadow: none;
+    border: 1px solid #ddd;
+  }
+}
+.dev-summary-panel {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding-top: 8px;
+}
+.summary-chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.landing-header {
+  align-items: center;
 }
 .panel-card .field-block {
   margin-bottom: 18px;
@@ -1114,6 +1232,9 @@ tbody tr:hover {
   overflow: hidden;
 }
 @media (max-width: 760px) {
+  .landing-grid {
+    grid-template-columns: 1fr;
+  }
   .page-shell {
     padding: 24px 18px 36px;
   }

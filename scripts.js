@@ -159,32 +159,29 @@ function setupStudentProfileUpload() {
       status.textContent = 'Uploading picture...';
     }
 
-    const reader = new FileReader();
-    reader.onload = async () => {
-      const dataUrl = reader.result;
-      try {
-        const response = await fetch('/student/profile-picture', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body: new URLSearchParams({ profilePicture: dataUrl })
-        });
-        const result = await response.json().catch(() => ({ error: 'Unable to upload picture.' }));
-        if (!response.ok || result.error) {
-          if (status) status.textContent = result.error || 'Unable to upload picture.';
-          return;
-        }
+    const formData = new FormData();
+    formData.append('profilePicture', file);
 
-        renderProfileShell(previewShell, result.profilePicture || '', 'User');
-        document.querySelectorAll('.profile-photo-shell[data-user-id]').forEach((shell) => {
-          renderProfileShell(shell, result.profilePicture || '', shell.dataset.name || 'User');
-        });
-        if (status) status.textContent = 'Profile picture updated.';
-        refreshProfilePhotos();
-      } catch (error) {
-        if (status) status.textContent = 'Unable to upload picture.';
+    try {
+      const response = await fetch('/student/profile-picture', {
+        method: 'POST',
+        body: formData
+      });
+      const result = await response.json().catch(() => ({ error: 'Unable to upload picture.' }));
+      if (!response.ok || result.error) {
+        if (status) status.textContent = result.error || 'Unable to upload picture.';
+        return;
       }
-    };
-    reader.readAsDataURL(file);
+
+      renderProfileShell(previewShell, result.profilePicture || '', 'User');
+      document.querySelectorAll('.profile-photo-shell[data-user-id]').forEach((shell) => {
+        renderProfileShell(shell, result.profilePicture || '', shell.dataset.name || 'User');
+      });
+      if (status) status.textContent = 'Profile picture updated.';
+      refreshProfilePhotos();
+    } catch (error) {
+      if (status) status.textContent = 'Unable to upload picture.';
+    }
   });
 }
 
@@ -327,12 +324,12 @@ window.addEventListener('DOMContentLoaded', () => {
             throw new Error(result.error);
           }
 
-          if (action === 'export-users' && result.csv) {
+          if ((action === 'export-users' || action === 'export-grades') && result.csv) {
             const blob = new Blob([result.csv], { type: 'text/csv' });
             const url = URL.createObjectURL(blob);
             const anchor = document.createElement('a');
             anchor.href = url;
-            anchor.download = result.filename || 'users.csv';
+            anchor.download = result.filename || (action === 'export-grades' ? 'grades.csv' : 'users.csv');
             document.body.appendChild(anchor);
             anchor.click();
             anchor.remove();

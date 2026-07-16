@@ -4,13 +4,13 @@
   "description": "Simple grading portal with SQLite-backed login and registration.",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
-    "postinstall": "npm rebuild sqlite3 --build-from-source --unsafe-perm"
+    "start": "node server.js"
   },
   "dependencies": {
     "dotenv": "^17.4.2",
     "express": "^4.18.4",
     "express-session": "^1.17.4",
+    "multer": "^2.0.4",
     "nodemailer": "^6.9.4",
     "sqlite3": "^6.0.1"
   }
