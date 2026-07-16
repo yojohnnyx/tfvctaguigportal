@@ -224,6 +224,8 @@ window.addEventListener('DOMContentLoaded', () => {
 
   // Ensure student navigation exists on pages where server-side rendering may omit it.
   const ensureStudentNav = () => {
+    const pathname = window.location.pathname.replace(/\/+$/,'');
+    if (pathname !== '/dashboard') return; // only show on the student dashboard
     if (document.querySelector('student-nav')) return;
     const dashboard = document.querySelector('.dashboard-wrapper');
     if (!dashboard) return;
